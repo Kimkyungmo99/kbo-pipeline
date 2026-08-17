@@ -15,7 +15,7 @@ import httpx
 import polars as pl
 import yaml
 
-from ingestion.parsers.portal import extract_text_relays, parse_pitches
+from ingestion.parsers.portal import assert_seq_contiguous, extract_text_relays, parse_pitches
 
 CFG_PATH = Path("config/sources.yaml")
 
@@ -86,6 +86,7 @@ def main() -> None:
         print(list(raw.keys()), "| result 키:", list(raw.get("result", {}).keys()))
         sys.exit(1)
 
+    assert_seq_contiguous(rows)
     df = pl.DataFrame(rows)
     bronze_dir = Path(f"data/bronze/dt={dt}")
     bronze_dir.mkdir(parents=True, exist_ok=True)

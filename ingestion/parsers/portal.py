@@ -71,7 +71,9 @@ def is_pitch_option(opt: dict) -> bool:
 def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
     """경기 relay JSON → 투구 단위 행 리스트.
 
-    오늘의 성공 기준: game_id, pitch_seq_in_game, 볼카운트, result 만 채워져도 OK.
+    볼카운트·아웃·주루·점수는 옵션 안의 `currentGameState`에서 읽는다 (D1에서 확인).
+    주의: currentGameState가 투구 '직전'인지 '직후' 상태인지는 아직 미검증 —
+    볼카운트 전이 검증(계획서 8장) 구현 시 확정한다.
     """
     rows: list[dict[str, Any]] = []
     seq = 0
@@ -84,19 +86,36 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
             if not isinstance(opt, dict) or not is_pitch_option(opt):
                 continue
             seq += 1
+            gs = opt.get("currentGameState") or {}
+            pitcher_id = gs.get("pitcher") or pitcher
+            batter_id = gs.get("batter") or batter
             rows.append({
                 "game_id": game_id,
                 "pitch_seq_in_game": seq,
                 "inning": inning,
                 "is_top": bool(is_top) if is_top is not None else None,
-                "pitcher_id": str(pitcher) if pitcher is not None else None,
-                "batter_id": str(batter) if batter is not None else None,
-                "balls": _to_int(_first(opt, _FIELD_CANDIDATES["balls"])),
-                "strikes": _to_int(_first(opt, _FIELD_CANDIDATES["strikes"])),
-                "outs": _to_int(_first(opt, _FIELD_CANDIDATES["outs"])),
+                "pitcher_id": str(pitcher_id) if pitcher_id is not None else None,
+                "batter_id": str(batter_id) if batter_id is not None else None,
+                "balls": _to_int(gs.get("ball")) if gs else _to_int(_first(opt, _FIELD_CANDIDATES["balls"])),
+                "strikes": _to_int(gs.get("strike")) if gs else _to_int(_first(opt, _FIELD_CANDIDATES["strikes"])),
+                "outs": _to_int(gs.get("out")) if gs else _to_int(_first(opt, _FIELD_CANDIDATES["outs"])),
+                "base1": _to_int(gs.get("base1")),
+                "base2": _to_int(gs.get("base2")),
+                "base3": _to_int(gs.get("base3")),
+                "score_home": _to_int(gs.get("homeScore")),
+                "score_away": _to_int(gs.get("awayScore")),
                 "pitch_type": _first(opt, _FIELD_CANDIDATES["pitch_type"]),
                 "velocity": _to_float(_first(opt, _FIELD_CANDIDATES["velocity"])),
                 "result": _first(opt, _FIELD_CANDIDATES["result"]),
                 "text": _first(opt, _FIELD_CANDIDATES["text"]),
             })
     return rows
+
+
+def assert_seq_contiguous(rows: list[dict[str, Any]]) -> None:
+    """pitch_seq_in_game이 1부터 빈틈없이 연속인지 — 파싱 누락 탐지 장치 (계획서 5장)."""
+    seqs = [r["pitch_seq_in_game"] for r in rows]
+    expected = list(range(1, len(rows) + 1))
+    assert seqs == expected, (
+        f"seq 연속성 위반: 총 {len(rows)}행인데 seq가 1..{len(rows)}과 불일치 — 파싱 누락 의심"
+    )
