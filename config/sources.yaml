@@ -1,0 +1,15 @@
+# 소스 설정 — URL은 코드에 하드코딩하지 않는다 (계획서 4장)
+# 네이버 스포츠 비공식 게이트웨이. 스키마는 예고 없이 바뀔 수 있음.
+portal:
+  base_url: "https://api-gw.sports.naver.com"
+  # 날짜 → 경기 목록. fromDate/toDate 는 YYYY-MM-DD
+  game_list_url: "https://api-gw.sports.naver.com/schedule/games?upperCategoryId=kbaseball&fromDate={date}&toDate={date}"
+  # 경기 상세 (상태 확인용)
+  game_url: "https://api-gw.sports.naver.com/schedule/games/{game_id}"
+  # 문자중계 (타석 단위 textRelays + 투구 옵션). 종료 경기는 정적 JSON.
+  # 이닝별로 나뉘어 올 수 있음 → run.py 에서 inning 파라미터 루프 시도
+  pitch_url: "https://api-gw.sports.naver.com/schedule/games/{game_id}/relay"
+  headers:
+    User-Agent: "kbo-pipeline personal project (contact: rudag1537@gmail.com)"
+    Accept: "application/json"
+  delay_seconds: 1.0

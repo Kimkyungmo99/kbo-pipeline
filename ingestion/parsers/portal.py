@@ -1,0 +1,102 @@
+"""네이버 스포츠 문자중계(relay) JSON → 투구 단위 행 파서.
+
+순수 함수만 둔다 — 네트워크·파일 IO 금지 (fetch와 분리, D3 테스트 대상).
+
+관찰된 구조 (비공식, 변경 가능):
+  relay 응답 = {"success": true, "result": {"textRelayData": {...}}}
+  textRelayData.textRelays  = 타석/이벤트 단위 리스트
+  각 textRelay.textOptions (또는 options) = 투구/텍스트 옵션 리스트
+    투구 옵션: {"pitchNum": 1, "speed": "145", "stuff": "직구",
+               "pitchResult": "B"|"S"|"F"|"H"..., "text": "...", ...}
+실제 키 이름은 탐색 후 이 파일만 고치면 된다.
+"""
+from __future__ import annotations
+
+from typing import Any
+
+# 투구 옵션에서 뽑을 필드 후보 (왼쪽부터 시도)
+_FIELD_CANDIDATES = {
+    "pitch_type": ("stuff", "pitchType", "stuffName"),
+    "velocity": ("speed", "pitchSpeed"),
+    "result": ("pitchResult", "result"),
+    "text": ("text", "playText"),
+    "balls": ("ballCount", "balls", "b"),
+    "strikes": ("strikeCount", "strikes", "s"),
+    "outs": ("outCount", "outs", "o"),
+}
+
+
+def _first(d: dict, keys: tuple[str, ...], default=None):
+    for k in keys:
+        if k in d and d[k] not in (None, ""):
+            return d[k]
+    return default
+
+
+def _to_float(v) -> float | None:
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _to_int(v) -> int | None:
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def extract_text_relays(raw: dict) -> list[dict]:
+    """relay 응답(이닝별 응답 리스트 병합본 포함)에서 textRelay 리스트를 꺼낸다."""
+    result = raw.get("result", raw)
+    data = result.get("textRelayData") or result.get("textRelay") or {}
+    if isinstance(data, list):  # 이닝별 리스트로 오는 경우
+        relays: list[dict] = []
+        for chunk in data:
+            relays.extend(chunk.get("textRelays", []))
+        return relays
+    return data.get("textRelays", [])
+
+
+def _options_of(relay: dict) -> list[dict]:
+    return relay.get("textOptions") or relay.get("options") or []
+
+
+def is_pitch_option(opt: dict) -> bool:
+    """투구가 아닌 텍스트(교체·안내 등) 옵션을 걸러낸다."""
+    return _to_int(opt.get("pitchNum")) is not None or _first(opt, _FIELD_CANDIDATES["result"]) is not None
+
+
+def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
+    """경기 relay JSON → 투구 단위 행 리스트.
+
+    오늘의 성공 기준: game_id, pitch_seq_in_game, 볼카운트, result 만 채워져도 OK.
+    """
+    rows: list[dict[str, Any]] = []
+    seq = 0
+    for relay in extract_text_relays(raw):
+        inning = _to_int(_first(relay, ("inn", "inning")))
+        is_top = relay.get("homeOrAway") in ("A", "away", 0, "0") or relay.get("btop")
+        batter = _first(relay, ("batterCode", "batter", "batterName"))
+        pitcher = _first(relay, ("pitcherCode", "pitcher", "pitcherName"))
+        for opt in _options_of(relay):
+            if not isinstance(opt, dict) or not is_pitch_option(opt):
+                continue
+            seq += 1
+            rows.append({
+                "game_id": game_id,
+                "pitch_seq_in_game": seq,
+                "inning": inning,
+                "is_top": bool(is_top) if is_top is not None else None,
+                "pitcher_id": str(pitcher) if pitcher is not None else None,
+                "batter_id": str(batter) if batter is not None else None,
+                "balls": _to_int(_first(opt, _FIELD_CANDIDATES["balls"])),
+                "strikes": _to_int(_first(opt, _FIELD_CANDIDATES["strikes"])),
+                "outs": _to_int(_first(opt, _FIELD_CANDIDATES["outs"])),
+                "pitch_type": _first(opt, _FIELD_CANDIDATES["pitch_type"]),
+                "velocity": _to_float(_first(opt, _FIELD_CANDIDATES["velocity"])),
+                "result": _first(opt, _FIELD_CANDIDATES["result"]),
+                "text": _first(opt, _FIELD_CANDIDATES["text"]),
+            })
+    return rows

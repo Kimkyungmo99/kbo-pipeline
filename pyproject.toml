@@ -1,0 +1,20 @@
+[project]
+name = "kbo-pipeline"
+version = "0.1.0"
+description = "KBO pitch-level data pipeline (personal, non-commercial)"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx",
+    "polars",
+    "pyarrow",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["ingestion", "ingestion.parsers"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
