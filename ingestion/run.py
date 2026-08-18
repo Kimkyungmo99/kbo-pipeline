@@ -95,20 +95,26 @@ def main() -> None:
 
     if mode == "--list":
         for g in list_games(sys.argv[2], cfg):
-            print(g.get("gameId"), g.get("awayTeamName"), "vs", g.get("homeTeamName"),
-                  "|", g.get("statusCode") or g.get("statusInfo"))
+            print(g.get("gameId"), g.get("categoryId"), g.get("awayTeamName"), "vs",
+                  g.get("homeTeamName"), "|", g.get("statusCode") or g.get("statusInfo"))
         return
 
     if mode == "--date":
         dt = sys.argv[2]
         games = list_games(dt, cfg)
-        # 취소 경기(cancel:true, BEFORE)는 relay가 null — RESULT만 수집 (D1 발견)
-        done = [g for g in games if g.get("statusCode") == "RESULT"]
-        print(f"{dt}: 전체 {len(games)}경기, 수집 대상(RESULT) {len(done)}경기")
+        # 필터 2종 (모두 실측으로 확인된 규칙):
+        # 1) categoryId == "kbo" — upperCategoryId=kbaseball에는 퓨처스 등 비KBO 경기가
+        #    섞이며, 그런 경기는 RESULT여도 투구 단위 relay가 없다 (0 pitches)
+        # 2) statusCode == "RESULT" — 취소 경기(cancel:true)는 relay가 null
+        done = [g for g in games
+                if g.get("categoryId") == "kbo" and g.get("statusCode") == "RESULT"]
+        print(f"{dt}: 전체 {len(games)}경기, 수집 대상(KBO·RESULT) {len(done)}경기")
         all_rows: list[dict] = []
         for g in done:
             rows = ingest_game(g["gameId"], dt, cfg)
             print(f"  {g['gameId']}: {len(rows)} pitches")
+            if not rows:
+                print(f"  경고: {g['gameId']} 투구 0건 — relay 구조 확인 필요")
             all_rows.extend(rows)
         if not all_rows:
             print("수집된 투구 없음")
