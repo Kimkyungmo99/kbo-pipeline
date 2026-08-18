@@ -1,8 +1,9 @@
-"""수직 슬라이스 진입점: 경기 1개 → raw JSON 보존 → Parquet.
+"""인제스천 진입점.
 
 사용:
-    python -m ingestion.run <game_id> <YYYY-MM-DD>
-    python -m ingestion.run --list <YYYY-MM-DD>        # 그 날짜 경기 목록/ID 확인
+    python -m ingestion.run <game_id> <YYYY-MM-DD>   # 경기 1개 (수직 슬라이스)
+    python -m ingestion.run --date <YYYY-MM-DD>      # 그날 전 경기 (D4)
+    python -m ingestion.run --list <YYYY-MM-DD>      # 경기 목록/상태 확인
 """
 from __future__ import annotations
 
@@ -27,14 +28,13 @@ def load_cfg() -> dict:
 def get_json(url: str, cfg: dict) -> dict:
     r = httpx.get(url, headers=cfg["headers"], timeout=10, follow_redirects=True)
     r.raise_for_status()
-    time.sleep(cfg["delay_seconds"])
+    time.sleep(cfg["delay_seconds"])  # 수집 예의: 요청 간 최소 1초 (계획서 4장)
     return r.json()
 
 
 def list_games(date: str, cfg: dict) -> list[dict]:
     raw = get_json(cfg["game_list_url"].format(date=date), cfg)
-    games = raw.get("result", {}).get("games", [])
-    return games
+    return raw.get("result", {}).get("games", [])
 
 
 def fetch_game(game_id: str, cfg: dict) -> dict:
@@ -46,7 +46,6 @@ def fetch_game(game_id: str, cfg: dict) -> dict:
     relays = extract_text_relays(raw)
     seen_innings = {r.get("inn") or r.get("inning") for r in relays}
     if len(seen_innings - {None}) <= 1:
-        # 마지막 이닝만 온 것으로 판단 → 이닝별 수집 시도
         chunks = []
         for inning in range(1, 13):
             try:
@@ -62,36 +61,70 @@ def fetch_game(game_id: str, cfg: dict) -> dict:
     return merged
 
 
+def load_or_fetch_raw(game_id: str, dt: str, cfg: dict) -> dict:
+    """이미 수집한 경기는 재요청하지 않는다 (수집 예의). raw 파일이 캐시."""
+    raw_path = Path(f"data/raw/dt={dt}") / f"game_{game_id}.json"
+    if raw_path.exists():
+        print(f"  {game_id}: raw 캐시 사용")
+        return json.loads(raw_path.read_text(encoding="utf-8"))
+    raw = fetch_game(game_id, cfg)
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_path.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    return raw
+
+
+def ingest_game(game_id: str, dt: str, cfg: dict) -> list[dict]:
+    raw = load_or_fetch_raw(game_id, dt, cfg)
+    rows = parse_pitches(raw, game_id)
+    assert_seq_contiguous(rows)
+    return rows
+
+
+def write_bronze(rows: list[dict], dt: str) -> Path:
+    df = pl.DataFrame(rows)
+    bronze_dir = Path(f"data/bronze/dt={dt}")
+    bronze_dir.mkdir(parents=True, exist_ok=True)
+    out = bronze_dir / "pitches.parquet"
+    df.write_parquet(out, compression="zstd")
+    return out
+
+
 def main() -> None:
     cfg = load_cfg()
+    mode = sys.argv[1]
 
-    if sys.argv[1] == "--list":
-        date = sys.argv[2]
-        for g in list_games(date, cfg):
+    if mode == "--list":
+        for g in list_games(sys.argv[2], cfg):
             print(g.get("gameId"), g.get("awayTeamName"), "vs", g.get("homeTeamName"),
                   "|", g.get("statusCode") or g.get("statusInfo"))
         return
 
-    game_id, dt = sys.argv[1], sys.argv[2]
-    raw = fetch_game(game_id, cfg)
+    if mode == "--date":
+        dt = sys.argv[2]
+        games = list_games(dt, cfg)
+        # 취소 경기(cancel:true, BEFORE)는 relay가 null — RESULT만 수집 (D1 발견)
+        done = [g for g in games if g.get("statusCode") == "RESULT"]
+        print(f"{dt}: 전체 {len(games)}경기, 수집 대상(RESULT) {len(done)}경기")
+        all_rows: list[dict] = []
+        for g in done:
+            rows = ingest_game(g["gameId"], dt, cfg)
+            print(f"  {g['gameId']}: {len(rows)} pitches")
+            all_rows.extend(rows)
+        if not all_rows:
+            print("수집된 투구 없음")
+            sys.exit(1)
+        out = write_bronze(all_rows, dt)
+        print(f"OK: {len(done)} games, {len(all_rows)} pitches -> {out}")
+        return
 
-    raw_dir = Path(f"data/raw/dt={dt}")
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    (raw_dir / f"game_{game_id}.json").write_text(
-        json.dumps(raw, ensure_ascii=False), encoding="utf-8")
-
-    rows = parse_pitches(raw, game_id)
+    # 기본: 경기 1개
+    game_id, dt = mode, sys.argv[2]
+    rows = ingest_game(game_id, dt, cfg)
     if not rows:
-        print("파싱 결과 0행 — 응답 구조가 예상과 다름. raw JSON 최상위 키:")
-        print(list(raw.keys()), "| result 키:", list(raw.get("result", {}).keys()))
+        print("파싱 결과 0행 — 응답 구조 확인 필요")
         sys.exit(1)
-
-    assert_seq_contiguous(rows)
-    df = pl.DataFrame(rows)
-    bronze_dir = Path(f"data/bronze/dt={dt}")
-    bronze_dir.mkdir(parents=True, exist_ok=True)
-    df.write_parquet(bronze_dir / "pitches.parquet", compression="zstd")
-    print(f"OK: {len(df)} pitches -> {bronze_dir/'pitches.parquet'}")
+    out = write_bronze(rows, dt)
+    print(f"OK: {len(rows)} pitches -> {out}")
 
 
 if __name__ == "__main__":
