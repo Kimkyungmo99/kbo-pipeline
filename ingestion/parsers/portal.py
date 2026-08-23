@@ -48,15 +48,23 @@ def _to_int(v) -> int | None:
 
 
 def extract_text_relays(raw: dict) -> list[dict]:
-    """relay 응답(이닝별 응답 리스트 병합본 포함)에서 textRelay 리스트를 꺼낸다."""
+    """relay 응답(이닝별 응답 리스트 병합본 포함)에서 textRelay 리스트를 꺼낸다.
+
+    소스는 웹 표시 순서(최신이 먼저 = `no` 내림차순)로 주므로,
+    시간순 seq 부여를 위해 `no` 오름차순으로 정렬해 반환한다.
+    (볼카운트 전이 검증이 잡아낸 버그 — 2026-08-24)
+    """
     result = raw.get("result", raw)
     data = result.get("textRelayData") or result.get("textRelay") or {}
     if isinstance(data, list):  # 이닝별 리스트로 오는 경우
         relays: list[dict] = []
         for chunk in data:
             relays.extend(chunk.get("textRelays", []))
-        return relays
-    return data.get("textRelays", [])
+    else:
+        relays = list(data.get("textRelays", []))
+    # no가 없는 relay는 뒤로, 나머지는 시간순(오름차순)
+    relays.sort(key=lambda r: (r.get("no") is None, r.get("no") or 0))
+    return relays
 
 
 def _options_of(relay: dict) -> list[dict]:
