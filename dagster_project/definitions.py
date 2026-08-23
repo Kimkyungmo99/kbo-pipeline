@@ -9,7 +9,8 @@ from pathlib import Path
 
 from dagster import AssetExecutionContext, DailyPartitionsDefinition, Definitions, asset
 
-from ingestion.run import make_source
+from ingestion.parsers.portal import assert_seq_contiguous
+from ingestion.run import make_source, write_bronze
 
 # 파티션 = 경기 날짜 (계획서 7장). 백필 시작점 2024 시즌 개막 전.
 kbo_daily = DailyPartitionsDefinition(
@@ -57,4 +58,39 @@ def raw_pitch_events(context: AssetExecutionContext) -> None:
     })
 
 
-defs = Definitions(assets=[raw_pitch_events])
+@asset(partitions_def=kbo_daily, group_name="ingestion", deps=[raw_pitch_events])
+def bronze_pitches(context: AssetExecutionContext) -> None:
+    """raw JSON → 타입 정리된 Parquet (bronze 레이어, 계획서 5장).
+
+    raw 파일만 읽는다 — 네트워크 접근 없음 (재파싱 가능성이 raw 보존의 이유).
+    경기 없는 날은 0행이 정상: Parquet을 쓰지 않고 성공 처리한다.
+    """
+    dt = context.partition_key
+    source = make_source()
+    raw_dir = Path(f"data/raw/source={source.source_name}/dt={dt}")
+
+    all_rows: list[dict] = []
+    game_count = 0
+    for raw_path in sorted(raw_dir.glob("game_*.json")) if raw_dir.exists() else []:
+        game_id = raw_path.stem.removeprefix("game_")
+        raw = json.loads(raw_path.read_text(encoding="utf-8"))
+        rows = source.parse_pitches(raw, game_id)
+        assert_seq_contiguous(rows)  # 파싱 누락 탐지 (경기 단위)
+        context.log.info(f"{game_id}: {len(rows)} pitches")
+        game_count += 1
+        all_rows.extend(rows)
+
+    if not all_rows:
+        context.log.info(f"{dt}: 투구 없음 (경기 없는 날 또는 raw 미수집) — 정상 처리")
+        context.add_output_metadata({"game_count": 0, "pitch_count": 0})
+        return
+
+    out = write_bronze(all_rows, dt)
+    context.add_output_metadata({
+        "game_count": game_count,
+        "pitch_count": len(all_rows),
+        "path": str(out),
+    })
+
+
+defs = Definitions(assets=[raw_pitch_events, bronze_pitches])

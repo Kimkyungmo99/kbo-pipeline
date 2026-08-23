@@ -23,10 +23,27 @@ class PortalSource(GameSource):
     # --- HTTP ---
 
     def _get_json(self, url: str) -> dict:
-        r = httpx.get(url, headers=self.cfg["headers"], timeout=10, follow_redirects=True)
-        r.raise_for_status()
-        time.sleep(self.cfg["delay_seconds"])  # 수집 예의: 요청 간 최소 1초
-        return r.json()
+        """수집 예의 (계획서 4장): 요청 간 1초 딜레이, 실패 시 지수 백오프 최대 3회.
+
+        4xx는 재시도해도 소용없으므로 즉시 올린다 (이닝 루프 종료 판단에도 쓰임).
+        5xx·네트워크 오류만 1s → 2s → 4s 백오프 후 재시도.
+        """
+        last_err: Exception | None = None
+        for attempt in range(3):
+            try:
+                r = httpx.get(url, headers=self.cfg["headers"], timeout=10,
+                              follow_redirects=True)
+                r.raise_for_status()
+                time.sleep(self.cfg["delay_seconds"])
+                return r.json()
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code < 500:
+                    raise
+                last_err = e
+            except httpx.TransportError as e:
+                last_err = e
+            time.sleep(2 ** attempt)
+        raise last_err
 
     # --- GameSource 구현 ---
 
