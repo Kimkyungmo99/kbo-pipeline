@@ -13,3 +13,4 @@ KBO 투구 단위(pitch-level) 데이터를 수집·검증·변환하는 개인 
 ## 설계 결정
 
 - [ADR 000 — 소스 선택](docs/adr/000-source-selection.md)
+- [ADR 002 — 볼카운트 전이 검증: 도메인 규칙을 품질 게이트로](docs/adr/002-count-transition-validation.md) — 첫 실행에서 파서의 시간 역순 버그와 소스 오기장 1건을 실제로 잡았다
