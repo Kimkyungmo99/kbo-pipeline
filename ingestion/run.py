@@ -14,6 +14,7 @@ from pathlib import Path
 import polars as pl
 import yaml
 
+from ingestion import storage
 from ingestion.base import GameRef, GameSource
 from ingestion.parsers.portal import assert_seq_contiguous
 from ingestion.portal import PortalSource
@@ -21,13 +22,28 @@ from ingestion.portal import PortalSource
 CFG_PATH = Path("config/sources.yaml")
 
 
+def get_s3_or_none():
+    """R2 클라이언트. 자격증명(.env) 없으면 None — 로컬 전용 모드로 동작."""
+    try:
+        return storage.get_client()
+    except KeyError:
+        print("(R2 자격증명 없음 — 로컬에만 저장)")
+        return None
+
+
 def make_source() -> GameSource:
     cfg = yaml.safe_load(CFG_PATH.read_text(encoding="utf-8"))["portal"]
     return PortalSource(cfg)
 
 
-def load_or_fetch_raw(source: GameSource, ref: GameRef) -> dict:
-    """이미 수집한 경기는 재요청하지 않는다 (수집 예의). raw 파일이 캐시."""
+def raw_key(source: GameSource, ref: GameRef) -> str:
+    """R2 키 = 로컬 경로에서 data/ 프리픽스만 뺀 것 (계획서 5장 레이아웃)."""
+    return f"raw/source={source.source_name}/dt={ref.date}/game_{ref.game_id}.json"
+
+
+def load_or_fetch_raw(source: GameSource, ref: GameRef, s3=None) -> dict:
+    """이미 수집한 경기는 재요청하지 않는다 (수집 예의). raw 파일이 캐시.
+    신규 수집 시 로컬 저장 직후 R2에도 업로드한다 (R2 = 원본 저장소)."""
     raw_path = Path(f"data/raw/source={source.source_name}/dt={ref.date}") / f"game_{ref.game_id}.json"
     if raw_path.exists():
         print(f"  {ref.game_id}: raw 캐시 사용")
@@ -35,22 +51,28 @@ def load_or_fetch_raw(source: GameSource, ref: GameRef) -> dict:
     raw = source.fetch_raw(ref)
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     raw_path.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+    if s3 is not None:
+        storage.upload_file(s3, raw_path, raw_key(source, ref))
+        print(f"  {ref.game_id}: R2 업로드 (raw)")
     return raw
 
 
-def ingest_game(source: GameSource, ref: GameRef) -> list[dict]:
-    raw = load_or_fetch_raw(source, ref)
+def ingest_game(source: GameSource, ref: GameRef, s3=None) -> list[dict]:
+    raw = load_or_fetch_raw(source, ref, s3=s3)
     rows = source.parse_pitches(raw, ref.game_id)
     assert_seq_contiguous(rows)
     return rows
 
 
-def write_bronze(rows: list[dict], dt: str) -> Path:
+def write_bronze(rows: list[dict], dt: str, s3=None) -> Path:
     df = pl.DataFrame(rows)
     bronze_dir = Path(f"data/bronze/dt={dt}")
     bronze_dir.mkdir(parents=True, exist_ok=True)
     out = bronze_dir / "pitches.parquet"
     df.write_parquet(out, compression="zstd")
+    if s3 is not None:
+        storage.upload_file(s3, out, f"bronze/dt={dt}/pitches.parquet")
+        print(f"  R2 업로드 (bronze dt={dt})")
     return out
 
 
@@ -66,12 +88,13 @@ def main() -> None:
 
     if mode == "--date":
         dt = sys.argv[2]
+        s3 = get_s3_or_none()
         games = source.list_games(dt)
         targets = [ref for ref in games if source.is_target(ref)]
         print(f"{dt}: 전체 {len(games)}경기, 수집 대상(KBO·RESULT) {len(targets)}경기")
         all_rows: list[dict] = []
         for ref in targets:
-            rows = ingest_game(source, ref)
+            rows = ingest_game(source, ref, s3=s3)
             print(f"  {ref.game_id}: {len(rows)} pitches")
             if not rows:
                 print(f"  경고: {ref.game_id} 투구 0건 — relay 구조 확인 필요")
@@ -79,17 +102,18 @@ def main() -> None:
         if not all_rows:
             print("수집된 투구 없음")
             sys.exit(1)
-        out = write_bronze(all_rows, dt)
+        out = write_bronze(all_rows, dt, s3=s3)
         print(f"OK: {len(targets)} games, {len(all_rows)} pitches -> {out}")
         return
 
     # 기본: 경기 1개
     game_id, dt = mode, sys.argv[2]
-    rows = ingest_game(source, GameRef(game_id=game_id, date=dt))
+    s3 = get_s3_or_none()
+    rows = ingest_game(source, GameRef(game_id=game_id, date=dt), s3=s3)
     if not rows:
         print("파싱 결과 0행 — 응답 구조 확인 필요")
         sys.exit(1)
-    out = write_bronze(rows, dt)
+    out = write_bronze(rows, dt, s3=s3)
     print(f"OK: {len(rows)} pitches -> {out}")
 
 
