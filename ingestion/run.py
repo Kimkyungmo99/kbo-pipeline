@@ -41,24 +41,39 @@ def raw_key(source: GameSource, ref: GameRef) -> str:
     return f"raw/source={source.source_name}/dt={ref.date}/game_{ref.game_id}.json"
 
 
-def load_or_fetch_raw(source: GameSource, ref: GameRef, s3=None) -> dict:
-    """이미 수집한 경기는 재요청하지 않는다 (수집 예의). raw 파일이 캐시.
-    신규 수집 시 로컬 저장 직후 R2에도 업로드한다 (R2 = 원본 저장소)."""
+def load_or_fetch_raw(source: GameSource, ref: GameRef, s3=None) -> tuple[dict, str]:
+    """멱등 수집: R2 객체 존재가 진실의 원천 (계획서 7장 — 상태를 스토리지에서 유도).
+
+    폴백 순서 (반환: (raw, 출처)):
+      1. 로컬 파일 → 그대로 사용 (빠른 캐시)                     출처 "local"
+      2. R2에 존재 → 다운로드해 사용 (소스 재요청 없음)           출처 "r2"
+      3. 둘 다 없음 → 소스에서 수집, 로컬 저장 + R2 업로드        출처 "fetched"
+    러너가 매번 초기화되는 환경(GitHub Actions)에서도 상태를 잃지 않는 근거.
+    """
     raw_path = Path(f"data/raw/source={source.source_name}/dt={ref.date}") / f"game_{ref.game_id}.json"
+    key = raw_key(source, ref)
+
     if raw_path.exists():
-        print(f"  {ref.game_id}: raw 캐시 사용")
-        return json.loads(raw_path.read_text(encoding="utf-8"))
+        return json.loads(raw_path.read_text(encoding="utf-8")), "local"
+
+    if s3 is not None and storage.object_exists(s3, key):
+        storage.download_file(s3, key, raw_path)
+        return json.loads(raw_path.read_text(encoding="utf-8")), "r2"
+
     raw = source.fetch_raw(ref)
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     raw_path.write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
     if s3 is not None:
-        storage.upload_file(s3, raw_path, raw_key(source, ref))
-        print(f"  {ref.game_id}: R2 업로드 (raw)")
-    return raw
+        storage.upload_file(s3, raw_path, key)
+    return raw, "fetched"
+
+
+_ORIGIN_LABEL = {"local": "로컬 캐시", "r2": "R2에서 복원", "fetched": "신규 수집→R2 업로드"}
 
 
 def ingest_game(source: GameSource, ref: GameRef, s3=None) -> list[dict]:
-    raw = load_or_fetch_raw(source, ref, s3=s3)
+    raw, origin = load_or_fetch_raw(source, ref, s3=s3)
+    print(f"  {ref.game_id}: {_ORIGIN_LABEL[origin]}")
     rows = source.parse_pitches(raw, ref.game_id)
     assert_seq_contiguous(rows)
     return rows

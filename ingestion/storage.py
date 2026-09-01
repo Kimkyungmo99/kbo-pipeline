@@ -60,6 +60,11 @@ def upload_file(s3, local_path: str | Path, key: str) -> None:
     s3.upload_file(str(local_path), bucket_name(), key)
 
 
+def download_file(s3, key: str, local_path: str | Path) -> None:
+    Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+    s3.download_file(bucket_name(), key, str(local_path))
+
+
 def list_keys(s3, prefix: str, limit: int = 50) -> list[str]:
     resp = s3.list_objects_v2(Bucket=bucket_name(), Prefix=prefix, MaxKeys=limit)
     return [o["Key"] for o in resp.get("Contents", [])]
