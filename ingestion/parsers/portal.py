@@ -90,9 +90,15 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
         is_top = relay.get("homeOrAway") in ("A", "away", 0, "0") or relay.get("btop")
         batter = _first(relay, ("batterCode", "batter", "batterName"))
         pitcher = _first(relay, ("pitcherCode", "pitcher", "pitcherName"))
+        seen_pitch_nums: set[int] = set()  # 소스가 같은 투구를 중복 기록하는 경우 대비 (2024-04-04 실측)
         for opt in _options_of(relay):
             if not isinstance(opt, dict) or not is_pitch_option(opt):
                 continue
+            pn = _to_int(opt.get("pitchNum"))
+            if pn is not None:
+                if pn in seen_pitch_nums:
+                    continue  # 같은 타석 내 동일 pitchNum 재등장 = 소스 중복 → 첫 기록만 사용
+                seen_pitch_nums.add(pn)
             seq += 1
             gs = opt.get("currentGameState") or {}
             pitcher_id = gs.get("pitcher") or pitcher

@@ -1,8 +1,8 @@
 """새니티 어서션 (계획서 8장 '기타 어서션').
 
 1. 경기당 투구 수 100~500 — 벗어나면 수집 누락(이닝 빠짐) 또는 중복 병합 의심
-2. 일별 경기 수 0 또는 2~6 — 1경기만 있는 날은 수집 실패 의심
-   (정상: 월요일 0, 평일 5, 더블헤더 있는 날 6+. KBO 10구단 = 최대 5경기/일 + DH)
+2. 일별 경기 수 0 또는 2~10 — 1경기만 있는 날은 수집 실패 의심
+   (정상: 월요일 0, 평일 5, 더블헤더 몰린 날 최대 10. 2024-04-21 실측: DH 3쌍 포함 8경기)
 """
 import polars as pl
 
@@ -21,10 +21,10 @@ for r in per_game.iter_rows(named=True):
         fail += 1
     print(f"  {r['dt']} {r['game_id']}: {r['len']}투구{flag}")
 
-print("\n== 2. 일별 경기 수 (정상 0 또는 2~6) ==")
+print("\n== 2. 일별 경기 수 (정상 0 또는 2~10, 더블헤더 포함) ==")
 per_day = per_game.group_by("dt").len().sort("dt")
 for r in per_day.iter_rows(named=True):
-    ok = r["len"] == 0 or 2 <= r["len"] <= 6
+    ok = r["len"] == 0 or 2 <= r["len"] <= 10
     flag = "" if ok else "  ← 의심!"
     if flag:
         fail += 1
