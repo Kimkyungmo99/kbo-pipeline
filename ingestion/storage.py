@@ -6,6 +6,7 @@
     py -m ingestion.storage upload <로컬경로> <키>
     py -m ingestion.storage exists <키>
     py -m ingestion.storage ls <프리픽스>
+    py -m ingestion.storage rm <키>          # 오브젝트 1개 삭제 (키 정확 일치만)
 """
 from __future__ import annotations
 
@@ -65,6 +66,14 @@ def download_file(s3, key: str, local_path: str | Path) -> None:
     s3.download_file(bucket_name(), key, str(local_path))
 
 
+def delete_object(s3, key: str) -> None:
+    """오브젝트 1개 삭제 — 수집 대상 규칙이 바뀌어 기존 산출물을 걷어낼 때만 사용.
+
+    프리픽스 일괄 삭제는 일부러 안 만든다 (raw 불변 보존 원칙 — 실수 방지).
+    """
+    s3.delete_object(Bucket=bucket_name(), Key=key)
+
+
 def list_keys(s3, prefix: str, limit: int = 50) -> list[str]:
     resp = s3.list_objects_v2(Bucket=bucket_name(), Prefix=prefix, MaxKeys=limit)
     return [o["Key"] for o in resp.get("Contents", [])]
@@ -86,8 +95,15 @@ def main() -> None:
         print(f"'{prefix}' 아래 {len(keys)}개:")
         for k in keys:
             print(" ", k)
+    elif cmd == "rm":
+        key = sys.argv[2]
+        if not object_exists(s3, key):
+            print(f"없음 (삭제할 것 없음) - {key}")
+            return
+        delete_object(s3, key)
+        print(f"삭제 OK: s3://{bucket_name()}/{key}")
     else:
-        print("사용법: upload <로컬> <키> | exists <키> | ls <프리픽스>")
+        print("사용법: upload <로컬> <키> | exists <키> | ls <프리픽스> | rm <키>")
 
 
 if __name__ == "__main__":
