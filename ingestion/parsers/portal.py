@@ -90,15 +90,29 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
         is_top = relay.get("homeOrAway") in ("A", "away", 0, "0") or relay.get("btop")
         batter = _first(relay, ("batterCode", "batter", "batterName"))
         pitcher = _first(relay, ("pitcherCode", "pitcher", "pitcherName"))
-        seen_pitch_nums: set[int] = set()  # 소스가 같은 투구를 중복 기록하는 경우 대비 (2024-04-04 실측)
+        # 소스의 두 가지 기록 이상을 구분해 처리한다 (둘 다 실측):
+        #  ① 동일 투구 중복 기록 — 같은 pitchNum이 같은 내용으로 재등장 (2024-04-04, 2024-07-24 7회초)
+        #  ② 타석 합침 — 두 타석을 relay 하나에 합치면서 pitchNum이 1부터 재시작
+        #     (2024-07-24 6회말 양석환·9회초 송성문 — 타자 안내 텍스트 없이 이어짐)
+        # 단순 "번호 중복 = 스킵"(구버전)은 ②에서 실제 투구를 삭제한다 (전이 검증이 잡음).
+        # 규칙: 번호+내용+타자가 모두 같을 때만 중복으로 스킵, 번호가 역행하면 새 타석으로 리셋.
+        seen: dict[int, tuple] = {}  # pitchNum -> (result, text, batter)
+        last_pn = 0
         for opt in _options_of(relay):
             if not isinstance(opt, dict) or not is_pitch_option(opt):
                 continue
             pn = _to_int(opt.get("pitchNum"))
             if pn is not None:
-                if pn in seen_pitch_nums:
-                    continue  # 같은 타석 내 동일 pitchNum 재등장 = 소스 중복 → 첫 기록만 사용
-                seen_pitch_nums.add(pn)
+                gs_probe = opt.get("currentGameState") or {}
+                sig = (_first(opt, _FIELD_CANDIDATES["result"]),
+                       _first(opt, _FIELD_CANDIDATES["text"]),
+                       gs_probe.get("batter"))
+                if pn in seen and seen[pn] == sig:
+                    continue  # ① 진짜 중복 → 첫 기록만 사용
+                if pn <= last_pn:
+                    seen = {}  # ② 번호 역행 + 내용 다름 = 합쳐진 새 타석 → 구간 리셋
+                seen[pn] = sig
+                last_pn = pn
             seq += 1
             gs = opt.get("currentGameState") or {}
             pitcher_id = gs.get("pitcher") or pitcher
