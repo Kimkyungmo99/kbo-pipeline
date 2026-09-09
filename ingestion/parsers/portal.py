@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ingestion.gametype import classify_game_type
+
 # 투구 옵션에서 뽑을 필드 후보 (왼쪽부터 시도)
 _FIELD_CANDIDATES = {
     "pitch_type": ("stuff", "pitchType", "stuffName"),
@@ -85,6 +87,7 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
     """
     rows: list[dict[str, Any]] = []
     seq = 0
+    game_type = classify_game_type(game_id)  # gameId만으로 결정 → 재파싱으로 재생산 가능
     for relay in extract_text_relays(raw):
         inning = _to_int(_first(relay, ("inn", "inning")))
         is_top = relay.get("homeOrAway") in ("A", "away", 0, "0") or relay.get("btop")
@@ -119,6 +122,7 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
             batter_id = gs.get("batter") or batter
             rows.append({
                 "game_id": game_id,
+                "game_type": game_type,
                 "pitch_seq_in_game": seq,
                 "inning": inning,
                 "is_top": bool(is_top) if is_top is not None else None,

@@ -9,6 +9,7 @@ import time
 import httpx
 
 from ingestion.base import GameRef, GameSource
+from ingestion.gametype import TARGET_GAME_TYPES, classify_game_type
 from ingestion.parsers import portal as portal_parser
 
 
@@ -88,16 +89,18 @@ class PortalSource(GameSource):
         return portal_parser.parse_pitches(raw, game_id)
 
     def is_target(self, ref: GameRef) -> bool:
-        """실측 확정 규칙: KBO 리그 + 종료 경기 + 정규 편성 경기만.
+        """실측 확정 규칙: KBO 리그 + 종료 경기 + 알려진 공식 경기 종류(올스타 제외).
 
         - 취소 경기는 relay null / 비KBO는 RESULT여도 투구 relay 없음
-        - 올스타전 등 이벤트전은 categoryId가 "kbo"라서 앞 두 조건을 통과한다
-          (2024-07-06 실측: 99990706WEEA02024 — gameId가 날짜 대신 9999로 시작,
-          팀코드 WE/EA는 10개 구단 코드가 아님). 정규 편성 경기는
-          gameId 앞 8자리 = 실제 경기 날짜이므로 그 일치를 세 번째 조건으로 쓴다.
+        - 경기 종류는 gameId 접두로 판별 (gametype.py): 정규·순위결정전·포스트시즌은 수집,
+          올스타전(9999)은 이벤트전이라 제외, 미확인 접두는 제외 + run.py가 경고
+        - 정규 경기는 gameId 앞 8자리 = 경기 날짜여야 한다 (한 번 더 잠금)
+        이력: 처음엔 "앞 8자리 = 날짜"만 썼는데 그 규칙은 포스트시즌·타이브레이크까지
+        걸러낸다는 걸 2026-09-10 probe로 확인 → 종류 기반으로 교체.
         """
-        return (
-            ref.category == "kbo"
-            and ref.status == "RESULT"
-            and ref.game_id.startswith(ref.date.replace("-", ""))
-        )
+        if ref.category != "kbo" or ref.status != "RESULT":
+            return False
+        gtype = classify_game_type(ref.game_id)
+        if gtype == "regular":
+            return ref.game_id.startswith(ref.date.replace("-", ""))
+        return gtype in TARGET_GAME_TYPES

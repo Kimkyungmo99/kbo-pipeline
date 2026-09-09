@@ -14,7 +14,6 @@ from pathlib import Path
 
 from ingestion.parsers.portal import (
     _options_of,
-    _to_int,
     extract_text_relays,
     is_pitch_option,
     parse_pitches,
@@ -28,21 +27,17 @@ raw = json.loads(raw_path.read_text(encoding="utf-8"))
 rows = parse_pitches(raw, game_id)
 relays = extract_text_relays(raw)
 
-# seq → relay 인덱스 매핑 (파서와 동일한 규칙: 투구 옵션만 세고, 중복 pitchNum은 스킵)
+# seq → relay 인덱스 매핑 — relay 하나짜리 raw를 파서에 넣어 행 수를 세는 방식으로
+# 파서 규칙(중복 제거·타석 합침 처리)을 그대로 재사용한다.
+# (처음엔 dedup 규칙을 여기 복제했다가 파서가 바뀌자 매핑이 어긋났다 — 2026-09-10 교훈:
+#  판정 로직은 한 곳에만 둔다)
 seq_to_ri: dict[int, int] = {}
 seq = 0
 for ri, relay in enumerate(relays):
-    seen: set[int] = set()
-    for opt in _options_of(relay):
-        if not isinstance(opt, dict) or not is_pitch_option(opt):
-            continue
-        pn = _to_int(opt.get("pitchNum"))
-        if pn is not None:
-            if pn in seen:
-                continue
-            seen.add(pn)
-        seq += 1
-        seq_to_ri[seq] = ri
+    n = len(parse_pitches({"result": {"textRelayData": {"textRelays": [relay]}}}, game_id))
+    for s in range(seq + 1, seq + n + 1):
+        seq_to_ri[s] = ri
+    seq += n
 
 
 def dump_relay(ri: int, label: str) -> None:

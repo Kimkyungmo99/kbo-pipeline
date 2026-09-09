@@ -16,6 +16,7 @@ import yaml
 
 from ingestion import storage
 from ingestion.base import GameRef, GameSource
+from ingestion.gametype import classify_game_type
 from ingestion.parsers.portal import assert_seq_contiguous
 from ingestion.portal import PortalSource
 
@@ -71,6 +72,19 @@ def load_or_fetch_raw(source: GameSource, ref: GameRef, s3=None) -> tuple[dict, 
 _ORIGIN_LABEL = {"local": "로컬 캐시", "r2": "R2에서 복원", "fetched": "신규 수집→R2 업로드"}
 
 
+def report_skipped(source: GameSource, games: list[GameRef]) -> None:
+    """kbo·RESULT인데 수집 대상이 아닌 경기를 종류와 함께 출력.
+
+    미확인 접두(unknown)가 조용히 빠지는 일을 막는 장치 — 새 시즌에 새 코드가 등장하면
+    여기서 드러나고, gametype.py에 실측 후 등록하면 된다.
+    """
+    for ref in games:
+        if ref.category == "kbo" and ref.status == "RESULT" and not source.is_target(ref):
+            gtype = classify_game_type(ref.game_id)
+            note = "  ← 미확인 접두! gametype.py에 실측 후 등록 필요" if gtype == "unknown" else ""
+            print(f"  제외: {ref.game_id} ({gtype}){note}")
+
+
 def ingest_game(source: GameSource, ref: GameRef, s3=None) -> list[dict]:
     raw, origin = load_or_fetch_raw(source, ref, s3=s3)
     print(f"  {ref.game_id}: {_ORIGIN_LABEL[origin]}")
@@ -98,7 +112,8 @@ def main() -> None:
     if mode == "--list":
         for ref in source.list_games(sys.argv[2]):
             mark = "O" if source.is_target(ref) else "X"
-            print(f"[{mark}] {ref.game_id} {ref.category} {ref.away} vs {ref.home} | {ref.status}")
+            print(f"[{mark}] {ref.game_id} {ref.category} {classify_game_type(ref.game_id)} "
+                  f"{ref.away} vs {ref.home} | {ref.status}")
         return
 
     if mode == "--date":
@@ -106,7 +121,8 @@ def main() -> None:
         s3 = get_s3_or_none()
         games = source.list_games(dt)
         targets = [ref for ref in games if source.is_target(ref)]
-        print(f"{dt}: 전체 {len(games)}경기, 수집 대상(KBO·RESULT) {len(targets)}경기")
+        print(f"{dt}: 전체 {len(games)}경기, 수집 대상 {len(targets)}경기")
+        report_skipped(source, games)
         all_rows: list[dict] = []
         for ref in targets:
             rows = ingest_game(source, ref, s3=s3)

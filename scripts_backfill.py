@@ -11,7 +11,7 @@ import sys
 import time
 from datetime import date, timedelta
 
-from ingestion.run import get_s3_or_none, ingest_game, make_source, write_bronze
+from ingestion.run import get_s3_or_none, ingest_game, make_source, report_skipped, write_bronze
 
 start = date.fromisoformat(sys.argv[1])
 end = date.fromisoformat(sys.argv[2])
@@ -28,6 +28,7 @@ while d <= end:
     try:
         games = source.list_games(dt)
         targets = [r for r in games if source.is_target(r)]
+        report_skipped(source, games)  # 미확인 접두가 조용히 빠지지 않게
         day_rows: list[dict] = []
         for ref in targets:
             day_rows.extend(ingest_game(source, ref, s3=s3))
