@@ -86,8 +86,21 @@ def delete_object(s3, key: str) -> None:
 
 
 def list_keys(s3, prefix: str, limit: int = 50) -> list[str]:
+    """프리픽스 아래 키 최대 limit개 (미리보기용)."""
     resp = s3.list_objects_v2(Bucket=bucket_name(), Prefix=prefix, MaxKeys=limit)
     return [o["Key"] for o in resp.get("Contents", [])]
+
+
+def count_keys(s3, prefix: str) -> int:
+    """프리픽스 아래 객체 전체 개수 — 페이지네이션 포함.
+
+    list_objects_v2는 한 응답에 최대 1,000개만 준다. 2026-09-13 raw가 1,009개가 되자
+    개수 대조가 '로컬 1009 / R2 1000 불일치'로 오탐 (객체는 전부 존재했음) → 페이지를 끝까지 넘긴다.
+    """
+    n = 0
+    for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket_name(), Prefix=prefix):
+        n += page.get("KeyCount", len(page.get("Contents", [])))
+    return n
 
 
 def main() -> None:

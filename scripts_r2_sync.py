@@ -30,7 +30,7 @@ for local in sorted(Path("data").rglob("*")):
 print(f"\n동기화 완료: 업로드 {uploaded} / 스킵(이미 존재) {skipped}")
 
 print("\n== 개수 대조 (로컬 vs R2) ==")
-r2_raw = len(storage.list_keys(s3, "raw/", limit=1000))
-r2_bronze = len(storage.list_keys(s3, "bronze/", limit=1000))
+r2_raw = storage.count_keys(s3, "raw/")        # 페이지네이션 — 1,000개 상한 오탐 방지
+r2_bronze = storage.count_keys(s3, "bronze/")
 print(f"raw:    로컬 {local_raw} / R2 {r2_raw} {'OK' if local_raw == r2_raw else '← 불일치!'}")
 print(f"bronze: 로컬 {local_bronze} / R2 {r2_bronze} {'OK' if local_bronze == r2_bronze else '← 불일치!'}")
