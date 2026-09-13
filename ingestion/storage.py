@@ -15,7 +15,17 @@ import sys
 from pathlib import Path
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
+
+# 2026-09-13 실측: 백필 중 R2 업로드가 응답 없이 무한 대기 (s3transfer가 MAXINT로 기다림) → Ctrl+C.
+# 연결·읽기 타임아웃과 재시도 상한을 명시해, 멈추면 예외로 드러나고 백필 드라이버의 날짜 단위
+# 예외 처리("이 날짜는 건너뜀, 재실행 시 멱등 재시도")로 넘어가게 한다.
+_R2_CONFIG = Config(
+    connect_timeout=10,
+    read_timeout=60,
+    retries={"max_attempts": 3, "mode": "standard"},
+)
 
 
 def load_env(path: str = ".env") -> None:
@@ -38,6 +48,7 @@ def get_client():
         aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"],
         aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"],
         region_name="auto",
+        config=_R2_CONFIG,
     )
 
 
