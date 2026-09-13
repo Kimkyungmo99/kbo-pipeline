@@ -78,6 +78,27 @@ def is_pitch_option(opt: dict) -> bool:
     return _to_int(opt.get("pitchNum")) is not None or _first(opt, _FIELD_CANDIDATES["result"]) is not None
 
 
+def pitch_clock_event(opt: dict) -> str | None:
+    """피치클락 페널티 이벤트 판별 — 2025 시즌 실측.
+
+    2025부터 소스는 피치클락 위반 페널티를 "N구 피치클락 투수위반 볼"처럼 **구 번호를 소비하는
+    텍스트 옵션**으로 기록한다 (pitchNum·pitchResult 없음, currentGameState는 있음).
+    투구가 아니지만 카운트를 바꾸므로 버리면 볼카운트 흐름이 끊긴다 (2025-03~04: 위반 58건의 원인).
+    2024의 "피치클락 위반 … 경고"는 카운트 변화가 없어 이벤트가 아니다 → None.
+    반환: "pitch_clock_ball" | "pitch_clock_strike" | None
+    """
+    if is_pitch_option(opt):
+        return None
+    text = (_first(opt, _FIELD_CANDIDATES["text"]) or "").strip()
+    if "피치클락" not in text or not opt.get("currentGameState"):
+        return None
+    if text.endswith("볼"):
+        return "pitch_clock_ball"
+    if text.endswith("스트라이크"):
+        return "pitch_clock_strike"
+    return None  # 경고·고장 안내 등
+
+
 def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
     """경기 relay JSON → 투구 단위 행 리스트.
 
@@ -102,7 +123,10 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
         seen: dict[int, tuple] = {}  # pitchNum -> (result, text, batter)
         last_pn = 0
         for opt in _options_of(relay):
-            if not isinstance(opt, dict) or not is_pitch_option(opt):
+            if not isinstance(opt, dict):
+                continue
+            event_type = "pitch" if is_pitch_option(opt) else pitch_clock_event(opt)
+            if event_type is None:
                 continue
             pn = _to_int(opt.get("pitchNum"))
             if pn is not None:
@@ -123,7 +147,8 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
             rows.append({
                 "game_id": game_id,
                 "game_type": game_type,
-                "pitch_seq_in_game": seq,
+                "event_type": event_type,  # 'pitch' | 'pitch_clock_ball' | 'pitch_clock_strike'
+                "pitch_seq_in_game": seq,  # 이벤트 포함 순번 (카운트 흐름의 순서)
                 "inning": inning,
                 "is_top": bool(is_top) if is_top is not None else None,
                 "pitcher_id": str(pitcher_id) if pitcher_id is not None else None,
