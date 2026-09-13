@@ -81,7 +81,8 @@ def report_skipped(source: GameSource, games: list[GameRef]) -> None:
     for ref in games:
         if ref.category == "kbo" and ref.status == "RESULT" and not source.is_target(ref):
             gtype = classify_game_type(ref.game_id)
-            note = "  ← 미확인 접두! gametype.py에 실측 후 등록 필요" if gtype == "unknown" else ""
+            note = ("  ← 미확인! gametype.py 확인: 새 접두면 GAME_TYPE_BY_PREFIX, 새 시즌이면 SEASON_OPENING에 등록"
+                    if gtype == "unknown" else "")
             print(f"  제외: {ref.game_id} ({gtype}){note}")
 
 

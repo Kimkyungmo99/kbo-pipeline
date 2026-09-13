@@ -37,6 +37,16 @@ def test_postseason_and_tiebreaker_included():
     assert SRC.is_target(ref("77771022SSHT02024", "2024-10-22"))  # KS
 
 
+def test_exhibition_included_with_label():
+    # 시범경기는 수집하되 game_type='exhibition'으로 구분 (2026-09-13 결정)
+    assert SRC.is_target(ref("20250308HTLT02025", "2025-03-08"))
+
+
+def test_unregistered_season_excluded():
+    # 개막일 미등록 시즌은 전부 unknown → 제외 + report_skipped 경고 (SEASON_OPENING 등록이 연 1회 유지보수)
+    assert not SRC.is_target(ref("20270325LGKT02027", "2027-03-25"))
+
+
 def test_unknown_prefix_excluded():
     # 새 코드가 나타나면 조용히 수집되지 않고 제외 + run.py 경고로 드러나야 한다
     assert not SRC.is_target(ref("88881022HTSS02024", "2024-10-22"))
