@@ -56,7 +56,7 @@ for row in df.iter_rows(named=True):
 
 print(f"총 {len(df)}투구")
 print(f"타석 내 합법 전이: {legal_within} / 타석 시작 정상: {pa_starts_ok}")
-print(f"\n전이 분포 (Δ볼, Δ스트라이크) — 음수는 새 타석:")
+print(f"\n전이 분포 (Δ볼, Δ스트라이크) - 음수는 새 타석:")
 for (db, ds), n in sorted(transition_counts.items(), key=lambda x: -x[1]):
     print(f"  ({db:+d},{ds:+d}): {n}")
 
