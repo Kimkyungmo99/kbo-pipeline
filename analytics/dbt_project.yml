@@ -6,9 +6,14 @@ profile: kbo_analytics
 
 model-paths: ["models"]
 test-paths: ["tests"]
+seed-paths: ["seeds"]
 clean-targets: ["target", "dbt_packages"]
 
 models:
   kbo_analytics:
     staging:
       +materialized: table
+
+seeds:
+  kbo_analytics:
+    +quote_columns: false

@@ -1,0 +1,9 @@
+game_id,ending_pitch_seq_in_game,reason
+20240504OBLG02024,88,source missing terminal result
+20240504OBLG02024,220,pitch clock warning without terminal result
+20240504OBLG02024,273,source missing terminal result
+20240620LTKT02024,328,inning ended on wild pitch
+20240724WOOB02024,293,source missing terminal result
+20240724WOOB02024,320,source missing terminal result
+20240802SKSS02024,261,inning ended on wild pitch
+20250719HHKT02025,208,rain called game during plate appearance

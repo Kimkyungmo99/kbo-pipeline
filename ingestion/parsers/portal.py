@@ -122,11 +122,21 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
         # 규칙: 번호+내용+타자가 모두 같을 때만 중복으로 스킵, 번호가 역행하면 새 타석으로 리셋.
         seen: dict[int, tuple] = {}  # pitchNum -> (result, text, batter)
         last_pn = 0
+        last_event_row: dict[str, Any] | None = None
         for opt in _options_of(relay):
             if not isinstance(opt, dict):
                 continue
             event_type = "pitch" if is_pitch_option(opt) else pitch_clock_event(opt)
             if event_type is None:
+                # 타석 결과와 후속 주자 상황은 별도 텍스트 옵션에만 있다.
+                # 직전 이벤트에 순서대로 붙여 두면 dbt에서 마지막 이벤트의 문맥으로
+                # HBP·볼넷·안타·아웃 등을 판정할 수 있다.
+                context = (_first(opt, _FIELD_CANDIDATES["text"]) or "").strip()
+                if last_event_row is not None and context:
+                    previous = last_event_row["following_text"]
+                    last_event_row["following_text"] = (
+                        f"{previous} | {context}" if previous else context
+                    )
                 continue
             pn = _to_int(opt.get("pitchNum"))
             if pn is not None:
@@ -144,7 +154,7 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
             gs = opt.get("currentGameState") or {}
             pitcher_id = gs.get("pitcher") or pitcher
             batter_id = gs.get("batter") or batter
-            rows.append({
+            row = {
                 "game_id": game_id,
                 "game_type": game_type,
                 "event_type": event_type,  # 'pitch' | 'pitch_clock_ball' | 'pitch_clock_strike'
@@ -165,7 +175,10 @@ def parse_pitches(raw: dict, game_id: str) -> list[dict[str, Any]]:
                 "velocity": _to_float(_first(opt, _FIELD_CANDIDATES["velocity"])),
                 "result": _first(opt, _FIELD_CANDIDATES["result"]),
                 "text": _first(opt, _FIELD_CANDIDATES["text"]),
-            })
+                "following_text": None,
+            }
+            rows.append(row)
+            last_event_row = row
     return rows
 
 

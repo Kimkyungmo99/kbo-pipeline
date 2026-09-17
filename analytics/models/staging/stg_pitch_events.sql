@@ -20,7 +20,8 @@ with bronze as (
         pitch_type,
         velocity,
         result,
-        text
+        text,
+        following_text
     from read_parquet(
         '../data/bronze/dt=*/pitches.parquet',
         hive_partitioning = true
@@ -33,6 +34,7 @@ with_previous as (
         lag(inning) over game_events as previous_inning,
         lag(is_top) over game_events as previous_is_top,
         lag(batter_id) over game_events as previous_batter_id,
+        lag(following_text) over game_events as previous_following_text,
         lag(balls) over game_events as previous_balls,
         lag(strikes) over game_events as previous_strikes
     from bronze
@@ -48,7 +50,10 @@ marked_plate_appearances as (
         previous_inning is null
         or inning != previous_inning
         or is_top != previous_is_top
-        or batter_id is distinct from previous_batter_id
+        or (
+            batter_id is distinct from previous_batter_id
+            and not contains(coalesce(previous_following_text, ''), '대타')
+        )
         or balls < previous_balls
         or strikes < previous_strikes
             as is_plate_appearance_start
@@ -95,5 +100,6 @@ select
     pitch_type,
     velocity,
     result,
-    text
+    text,
+    following_text
 from with_pre_pitch_state

@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: int_plate_appearances
+    description: 경기와 타석별 한 행으로 집계하고 문자중계 종료 문구에서 타석 결과를 분류한다.
+    columns:
+      - name: game_id
+        data_tests: [not_null]
+      - name: plate_appearance_number
+        data_tests: [not_null]
+      - name: event_count
+        data_tests: [not_null]
+      - name: plate_appearance_result
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - hit_by_pitch
+                  - intentional_walk
+                  - walk
+                  - strikeout
+                  - home_run
+                  - triple
+                  - double
+                  - single
+                  - sacrifice
+                  - fielders_choice
+                  - reached_on_error
+                  - out
+                  - unknown

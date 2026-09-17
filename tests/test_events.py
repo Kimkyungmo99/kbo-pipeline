@@ -51,3 +51,16 @@ def test_2024_warning_is_not_an_event():
 
 def test_batter_announcement_without_state_is_ignored():
     assert pitch_clock_event(text_opt("3번타자 오스틴")) is None
+
+
+def test_text_after_event_is_preserved_as_context():
+    raw = raw_of([
+        text_opt("3번타자 오스틴"),
+        pitch(1, "B", "1구 볼", 2, 0),
+        text_opt("오스틴 : 몸에 맞는 볼"),
+        text_opt("1루주자 오스틴 : 2루까지 진루"),
+    ])
+    rows = parse_pitches(raw, "20250309LGKT02025")
+    assert rows[0]["following_text"] == (
+        "오스틴 : 몸에 맞는 볼 | 1루주자 오스틴 : 2루까지 진루"
+    )
