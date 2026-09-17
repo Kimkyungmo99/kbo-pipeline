@@ -1,0 +1,14 @@
+game_id,pitch_seq_in_game,reason
+20240404LTHH02024,150,source count jump
+20240404LTHH02024,155,source count jump
+20240404LTHH02024,212,source missing early pitch
+20240411WOSK02024,163,source count jump
+20240504OBLG02024,213,source count jump
+20240504OBLG02024,162,source missing first pitch
+20240724WOOB02024,123,source missing early pitch
+20240724WOOB02024,217,source missing early pitch
+20240724WOOB02024,229,source missing early pitch
+20240724WOOB02024,285,source missing early pitch
+20250709SSNC02025,54,source HBP count anomaly
+20250902LTLG02025,2,source HBP count anomaly
+20260814OBHT02026,5,source count jump

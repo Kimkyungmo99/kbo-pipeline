@@ -1,7 +1,7 @@
 """볼카운트 전이 검증 초안 (계획서 8장, ADR 002 후보).
 
 규칙 (우리 데이터는 '투구 직후' 상태임을 반영):
-- 타석 안에서 카운트는 감소하지 않는다 → 감소가 보이면 새 타석 시작으로 판정
+- 이닝·공수·타자·카운트 리셋으로 새 타석을 판정한다. 대타가 나와도 카운트가 이어지면 같은 타석이다.
 - 타석 내 전이는 셋 중 하나만 합법:
     볼+1        (Δb,Δs) = (1,0)
     스트라이크+1 (Δb,Δs) = (0,1)   (s<3까지)
@@ -28,35 +28,42 @@ pa_starts_ok = 0
 violations: list[dict] = []
 transition_counts: dict[tuple, int] = {}
 
-prev = None  # (game_id, balls, strikes)
+prev = None  # 이전 이벤트 행
 for row in df.iter_rows(named=True):
     cur = (row["balls"], row["strikes"])
-    if prev is None or prev[0] != row["game_id"]:
-        kind = "게임 첫 투구"
+    is_pa_start = (
+        prev is None
+        or prev["game_id"] != row["game_id"]
+        or prev["inning"] != row["inning"]
+        or prev["is_top"] != row["is_top"]
+        or (
+            prev["batter_id"] != row["batter_id"]
+            and "대타" not in (prev.get("following_text") or "")
+        )
+        or row["balls"] < prev["balls"]
+        or row["strikes"] < prev["strikes"]
+    )
+    if is_pa_start:
+        kind = "새 타석 시작"
         ok = cur in {(0, 0), (0, 1), (1, 0)}
         pa_starts_ok += ok
     else:
-        db, ds = cur[0] - prev[1], cur[1] - prev[2]
+        db, ds = cur[0] - prev["balls"], cur[1] - prev["strikes"]
         transition_counts[(db, ds)] = transition_counts.get((db, ds), 0) + 1
-        if db < 0 or ds < 0:
-            kind = "새 타석 시작(카운트 감소)"
-            ok = cur in {(0, 0), (0, 1), (1, 0)}
-            pa_starts_ok += ok
-        else:
-            kind = "타석 내 전이"
-            ok = (db, ds) in {(1, 0), (0, 1), (0, 0)} and cur[1] <= 3 and cur[0] <= 4
-            legal_within += ok
+        kind = "타석 내 전이"
+        ok = (db, ds) in {(1, 0), (0, 1), (0, 0)} and cur[1] <= 3 and cur[0] <= 4
+        legal_within += ok
     if not ok:
         violations.append({
             "game_id": row["game_id"], "seq": row["pitch_seq_in_game"],
             "종류": kind, "카운트": f"{cur[0]}-{cur[1]}",
             "result": row["result"], "text": row["text"],
         })
-    prev = (row["game_id"], cur[0], cur[1])
+    prev = row
 
 print(f"총 {len(df)}투구")
 print(f"타석 내 합법 전이: {legal_within} / 타석 시작 정상: {pa_starts_ok}")
-print(f"\n전이 분포 (Δ볼, Δ스트라이크) - 음수는 새 타석:")
+print(f"\n타석 내 전이 분포 (Δ볼, Δ스트라이크):")
 for (db, ds), n in sorted(transition_counts.items(), key=lambda x: -x[1]):
     print(f"  ({db:+d},{ds:+d}): {n}")
 

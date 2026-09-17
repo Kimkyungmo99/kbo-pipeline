@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: fct_pitches
+    description: 실제 투구 한 개당 한 행인 분석용 fact. 피치클락 페널티 이벤트는 제외하고 경기 종류와 타석 결과를 연결한다.
+    columns:
+      - name: game_date
+        data_tests: [not_null]
+      - name: season
+        data_tests: [not_null]
+      - name: game_id
+        data_tests: [not_null]
+      - name: game_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [regular, exhibition, tiebreaker, wildcard, semi_po, po, ks]
+      - name: pitch_seq_in_game
+        data_tests: [not_null]
+      - name: pitch_number_in_plate_appearance
+        data_tests: [not_null]
+      - name: balls_before_pitch
+        data_tests: [not_null]
+      - name: strikes_before_pitch
+        data_tests: [not_null]
+      - name: plate_appearance_result
+        data_tests: [not_null]

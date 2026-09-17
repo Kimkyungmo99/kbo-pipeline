@@ -48,8 +48,8 @@ marked_plate_appearances as (
     select
         *,
         previous_inning is null
-        or inning != previous_inning
-        or is_top != previous_is_top
+        or inning is distinct from previous_inning
+        or is_top is distinct from previous_is_top
         or (
             batter_id is distinct from previous_batter_id
             and not contains(coalesce(previous_following_text, ''), '대타')

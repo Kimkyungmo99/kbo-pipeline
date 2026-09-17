@@ -13,6 +13,8 @@ models:
   kbo_analytics:
     staging:
       +materialized: table
+    marts:
+      +materialized: table
 
 seeds:
   kbo_analytics:
