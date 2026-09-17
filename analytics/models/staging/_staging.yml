@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: stg_pitch_events
+    description: 투구와 피치클락 이벤트에 투구 직전 볼·스트라이크 상태와 경기 내 타석 번호를 부여한다.
+    columns:
+      - name: game_date
+        data_tests: [not_null]
+      - name: game_id
+        data_tests: [not_null]
+      - name: pitch_seq_in_game
+        data_tests: [not_null]
+      - name: plate_appearance_number
+        data_tests: [not_null]
+      - name: balls_before_event
+        data_tests: [not_null]
+      - name: strikes_before_event
+        data_tests: [not_null]

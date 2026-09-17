@@ -12,6 +12,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+analytics = ["dbt-duckdb>=1.11,<2"]
 
 [tool.setuptools]
 packages = ["ingestion", "ingestion.parsers"]

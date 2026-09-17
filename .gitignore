@@ -4,3 +4,6 @@ __pycache__/
 .venv/
 .pytest_cache/
 .env
+analytics/target/
+analytics/logs/
+analytics/*.duckdb
