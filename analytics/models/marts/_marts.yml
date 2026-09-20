@@ -1,6 +1,40 @@
 version: 2
 
 models:
+  - name: dim_players
+    description: 투수와 타자 ID를 하나로 합친 선수 차원. 관측 기간과 역할별 경기·투구 수를 제공한다.
+    columns:
+      - name: player_id
+        data_tests: [not_null, unique]
+      - name: first_seen_date
+        data_tests: [not_null]
+      - name: last_seen_date
+        data_tests: [not_null]
+
+  - name: agg_pitch_type_count
+    description: 시즌·경기 종류·구종·투구 전 카운트별 투구 결과 지표. 구종 결측은 미분류로 보존한다.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: pitch_type
+        data_tests: [not_null]
+      - name: balls_before_pitch
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3]
+      - name: strikes_before_pitch
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2]
+      - name: pitch_count
+        data_tests: [not_null]
+
   - name: fct_pitches
     description: 실제 투구 한 개당 한 행인 분석용 fact. 피치클락 페널티 이벤트는 제외하고 경기 종류와 타석 결과를 연결한다.
     columns:
