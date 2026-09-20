@@ -39,3 +39,5 @@ for dt in dts:
     print(f"  {dt}: bronze {have}경기 / 목록 RESULT {expected}경기{flag}")
 
 print(f"\n{'완전성 통과 - 전 날짜 일치' if mismatch == 0 else f'불일치 {mismatch}일 - 해당 날짜 재수집 권장 (멱등이라 --date 재실행이면 됨)'}")
+if mismatch:
+    sys.exit(1)

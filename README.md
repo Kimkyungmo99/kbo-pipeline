@@ -1,12 +1,13 @@
 # kbo-pipeline
 
-KBO 투구 단위(pitch-level) 데이터를 수집·검증·변환하는 개인 파이프라인 프로젝트 (진행 중).
+KBO 투구 단위(pitch-level) 데이터를 수집·검증·변환하는 개인 파이프라인 프로젝트.
 
-- 현재: **2024 시즌 완주** — 정규·순위결정전·포스트시즌 730경기 225,419투구가 raw(JSON)·bronze(Parquet)로 로컬 + Cloudflare R2에 보관. 2025 시즌 백필 진행 중
+- 현재: 2024 전체, 2025년 3~10월, 2026년 일부를 포함한 1,585경기 483,396개 이벤트가 raw(JSON)·bronze(Parquet)로 로컬 + Cloudflare R2에 보관
 - 수집: 멱등 3단계 폴백(로컬 → R2 → 소스), 순차 백필 드라이버(요청 간 1초, 동시 요청 없음), Dagster 일 파티션 asset 2개
-- 검증 5종: seq 연속성 · 새니티(경기당 투구 수, 일별 경기 수) · **볼카운트 전이(도메인 규칙)** · 완전성(bronze 경기 수 = 목록 API RESULT 수) · pytest 26개
+- 검증: seq 연속성 · 새니티 · **볼카운트 전이(도메인 규칙)** · 완전성(bronze 경기 수 = 목록 API RESULT 수) · dbt 데이터 검사 · pytest
 - 경기 종류: gameId 접두로 분류(`game_type` 컬럼) — 정규·포스트시즌 수집, 올스타 제외
-- 다음: dbt 변환 레이어 (투구 직전 상태 shift, 타석 결과 판정, 전이 검증의 dbt test 이식)
+- 분석: dbt로 투구 fact, 타석 결과, 선수 차원, 구종·카운트별 지표 마트 생성
+- 자동화: 매일 오전 8시(KST) 전날 완료 경기를 수집하고 검증하며, 실패 시 GitHub 이슈 생성
 
 ## 실행
 
@@ -18,6 +19,7 @@ py scripts_reparse.py                           # 파서 변경 시 raw → bron
 py check_transitions.py                         # 볼카운트 전이 검증
 py check_completeness.py 2025-04-01 2025-04-30  # 수집 완전성 (목록 API 대조)
 py probe_game.py <game_id> <date> <seq> ...     # 위반 seq의 raw 원본 열람
+py scripts_daily.py 2026-09-20                  # 일일 자동화와 같은 경로를 수동 실행
 ```
 
 ## 데이터 정책

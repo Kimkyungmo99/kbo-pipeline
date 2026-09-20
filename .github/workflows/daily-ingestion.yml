@@ -1,0 +1,86 @@
+name: Daily KBO ingestion
+
+on:
+  schedule:
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "수집 날짜 (YYYY-MM-DD, 비우면 한국 시간 기준 전날)"
+        required: false
+        type: string
+
+concurrency:
+  group: daily-kbo-ingestion
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  collect-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Check R2 configuration
+        run: |
+          test -n "$R2_ACCOUNT_ID"
+          test -n "$R2_ACCESS_KEY_ID"
+          test -n "$R2_SECRET_ACCESS_KEY"
+          test -n "$R2_BUCKET"
+
+      - name: Run unit tests
+        run: python -m pytest -q
+
+      - name: Select collection date
+        env:
+          REQUESTED_DATE: ${{ inputs.date }}
+        run: |
+          if [ -n "$REQUESTED_DATE" ]; then
+            RUN_DATE="$REQUESTED_DATE"
+          else
+            RUN_DATE="$(TZ=Asia/Seoul date -d yesterday +%F)"
+          fi
+          echo "RUN_DATE=$RUN_DATE" >> "$GITHUB_ENV"
+          echo "### KBO daily run: $RUN_DATE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Collect completed games
+        run: python scripts_daily.py "$RUN_DATE"
+
+      - name: Check daily completeness
+        run: python check_completeness.py "$RUN_DATE" "$RUN_DATE"
+
+  report-failure:
+    needs: collect-and-validate
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open a failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="자동 수집 실패: $(TZ=Asia/Seoul date +%F)"
+          existing="$(gh issue list --repo "$REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          if [ -z "$existing" ]; then
+            gh issue create --repo "$REPOSITORY" --title "$title" --body "일일 KBO 수집 또는 검증에 실패했습니다. 실행 로그: $RUN_URL"
+          else
+            gh issue comment "$existing" --repo "$REPOSITORY" --body "다시 실패했습니다. 실행 로그: $RUN_URL"
+          fi
