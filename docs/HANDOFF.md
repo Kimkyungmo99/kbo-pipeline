@@ -99,7 +99,7 @@ git add -A; git commit -m "..."; git push
    - 같은 날 `following_text`를 bronze에 추가하고 전체 raw 재파싱. 대타 교체를 같은 타석으로 합쳐 124,340타석 확정. `int_plate_appearances`에서 124,332건 분류, HBP 1,753건 식별. 원본상 미완료 8건은 seed 예외로 관리. dbt build 16개 항목 통과.
 6. **`fct_pitches` 완료** — 실제 투구 483,164행. 피치클락 이벤트 232행 제외, 경기 종류 필터와 타석 결과 연결. 알려진 전이 위반 13건을 seed로 이식하고 dbt build 31개 항목 통과.
 7. **선수 차원·첫 지표 마트 완료** — `dim_players` 809명(투수 422명·타자 398명), `agg_pitch_type_count` 1,146행. 시즌·경기 종류·구종·투구 전 카운트별 483,164구를 전량 집계하고 결측 구종 1,519구도 `미분류`로 보존. dbt build 47개 항목, pytest 38개 통과.
-8. **GitHub Actions 일일 자동화 코드 완료** — 매일 오전 8시(KST)에 전날 완료 경기를 수집·완전성 검증하고, 실패 시 GitHub 이슈를 생성한다. `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` 저장소 secret 등록 후 첫 수동 실행 필요.
+8. **GitHub Actions 일일 자동화 완료** — 매일 오전 8시(KST)에 전날 완료 경기를 수집·완전성 검증하고, 실패 시 GitHub 이슈를 생성한다. R2 저장소 secret 4개 등록 완료. 2026-09-20 대상 첫 수동 실행에서 테스트·수집·R2 저장·완전성 검증 전 단계 성공(run 35539485560).
 9. 그 다음: 새 시즌마다 `SEASON_OPENING` 등록. 선수 이름·팀 이력 소스 조사와 투수·타자 단위 분석 뷰 확장.
 10. 문서 후속: ADR 002 개정 2(시즌 간 규정 변화가 검증 빈도에 나타난 사례), ADR 003에 exhibition·SEASON_OPENING 보강, 면접 문답 Q9(시즌별 변화율 조기 경보)·Q10(규모가 커져야 드러나는 운영 결함 — 1,009번째 파일).
 
