@@ -1,6 +1,44 @@
 version: 2
 
 models:
+  - name: agg_pitcher_season
+    description: 시즌·경기 종류·투수별 투구 및 상대 타석 결과 지표.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: player_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_players')
+                field: player_id
+      - name: pitch_count
+        data_tests: [not_null]
+      - name: plate_appearance_count
+        data_tests: [not_null]
+
+  - name: agg_batter_season
+    description: 시즌·경기 종류·타자별 투구 대응 및 타석 결과 지표.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: player_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_players')
+                field: player_id
+      - name: pitch_count
+        data_tests: [not_null]
+      - name: plate_appearance_count
+        data_tests: [not_null]
+
   - name: dim_players
     description: 투수와 타자 ID를 하나로 합친 선수 차원. 관측 기간과 역할별 경기·투구 수를 제공한다.
     columns:
