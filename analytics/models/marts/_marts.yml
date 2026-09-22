@@ -1,6 +1,29 @@
 version: 2
 
 models:
+  - name: dim_player_team_seasons
+    description: 선수의 시즌별 소속 팀과 관측 기간·역할. 시즌 중 이적은 팀별로 별도 행을 유지한다.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: player_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_players')
+                field: player_id
+      - name: player_name
+        data_tests: [not_null]
+      - name: team_code
+        data_tests: [not_null]
+      - name: team_name
+        data_tests: [not_null]
+      - name: first_seen_date
+        data_tests: [not_null]
+      - name: last_seen_date
+        data_tests: [not_null]
+
   - name: agg_pitcher_season
     description: 시즌·경기 종류·투수별 투구 및 상대 타석 결과 지표.
     columns:
@@ -44,6 +67,8 @@ models:
     columns:
       - name: player_id
         data_tests: [not_null, unique]
+      - name: player_name
+        data_tests: [not_null]
       - name: first_seen_date
         data_tests: [not_null]
       - name: last_seen_date

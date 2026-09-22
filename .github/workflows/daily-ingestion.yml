@@ -63,6 +63,9 @@ jobs:
       - name: Collect completed games
         run: python scripts_daily.py "$RUN_DATE"
 
+      - name: Extract player observations
+        run: python scripts_extract_players.py "$RUN_DATE"
+
       - name: Check daily completeness
         run: python check_completeness.py "$RUN_DATE" "$RUN_DATE"
 

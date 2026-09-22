@@ -1,6 +1,25 @@
 version: 2
 
 models:
+  - name: stg_player_observations
+    description: relay raw에서 복원한 날짜별 선수 이름·소속 팀·역할 관측.
+    columns:
+      - name: game_date
+        data_tests: [not_null]
+      - name: season
+        data_tests: [not_null]
+      - name: player_id
+        data_tests: [not_null]
+      - name: player_name
+        data_tests: [not_null]
+      - name: team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+
   - name: stg_pitch_events
     description: 투구와 피치클락 이벤트에 투구 직전 볼·스트라이크 상태와 경기 내 타석 번호를 부여한다.
     columns:
