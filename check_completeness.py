@@ -18,11 +18,12 @@ from ingestion.run import make_source
 
 source = make_source()
 
+bronze_root = Path("data/bronze")
 dts = sorted(
     p.name.removeprefix("dt=")
-    for p in Path("data/bronze").iterdir()
+    for p in bronze_root.iterdir()
     if p.is_dir() and p.name.startswith("dt=")
-)
+) if bronze_root.exists() else []
 if len(sys.argv) == 3:
     dts = [d for d in dts if sys.argv[1] <= d <= sys.argv[2]]
 
