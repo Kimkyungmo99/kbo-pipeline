@@ -30,6 +30,14 @@ joined as (
         pitch_events.is_top,
         pitch_events.pitcher_id,
         pitch_events.batter_id,
+        case
+            when pitch_events.is_top then substr(pitch_events.game_id, 11, 2)
+            else substr(pitch_events.game_id, 9, 2)
+        end as pitcher_team_code,
+        case
+            when pitch_events.is_top then substr(pitch_events.game_id, 9, 2)
+            else substr(pitch_events.game_id, 11, 2)
+        end as batter_team_code,
         pitch_events.balls_before_event as balls_before_pitch,
         pitch_events.strikes_before_event as strikes_before_pitch,
         pitch_events.balls_after_event as balls_after_pitch,

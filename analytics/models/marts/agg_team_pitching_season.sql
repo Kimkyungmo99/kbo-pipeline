@@ -1,10 +1,6 @@
 with pitch_metrics as (
-    select
-        season,
-        game_type,
-        pitcher_id as player_id,
-        count(distinct game_id) as game_count,
-        count(*) as pitch_count,
+    select season, game_type, pitcher_team_code as team_code,
+        count(distinct game_id) as game_count, count(*) as pitch_count,
         count(*) filter (where velocity > 0) as measured_velocity_count,
         avg(velocity) filter (where velocity > 0) as avg_velocity,
         count(*) filter (where pitch_result = 'B') as ball_count,
@@ -14,13 +10,10 @@ with pitch_metrics as (
         count(*) filter (where pitch_result = 'H') as in_play_count,
         count(*) filter (where pitch_result in ('S', 'F', 'H')) as swing_count
     from {{ ref('fct_pitches') }}
-    group by season, game_type, pitcher_id
+    group by season, game_type, pitcher_team_code
 ),
 plate_appearance_metrics as (
-    select
-        season,
-        game_type,
-        pitcher_id as player_id,
+    select season, game_type, pitcher_team_code as team_code,
         count(*) as plate_appearance_count,
         count(*) filter (where plate_appearance_result != 'unknown') as known_plate_appearance_count,
         count(*) filter (where plate_appearance_result = 'strikeout') as strikeout_count,
@@ -31,10 +24,11 @@ plate_appearance_metrics as (
         count(*) filter (where plate_appearance_result = 'home_run') as home_run_count
     from {{ ref('fct_pitches') }}
     where is_terminal_pitch
-    group by season, game_type, pitcher_id
+    group by season, game_type, pitcher_team_code
 )
 select
     pitch_metrics.*,
+    team_codes.team_name,
     plate_appearance_metrics.plate_appearance_count,
     plate_appearance_metrics.known_plate_appearance_count,
     plate_appearance_metrics.strikeout_count,
@@ -43,12 +37,9 @@ select
     plate_appearance_metrics.hit_by_pitch_count,
     plate_appearance_metrics.hit_count,
     plate_appearance_metrics.home_run_count,
-    players.player_name,
     pitch_metrics.swinging_strike_count::double / nullif(pitch_metrics.swing_count, 0) as whiff_per_swing,
-    plate_appearance_metrics.strikeout_count::double
-        / nullif(plate_appearance_metrics.known_plate_appearance_count, 0) as strikeout_rate,
-    plate_appearance_metrics.walk_count::double
-        / nullif(plate_appearance_metrics.known_plate_appearance_count, 0) as walk_rate
+    plate_appearance_metrics.strikeout_count::double / nullif(plate_appearance_metrics.known_plate_appearance_count, 0) as strikeout_rate,
+    plate_appearance_metrics.walk_count::double / nullif(plate_appearance_metrics.known_plate_appearance_count, 0) as walk_rate
 from pitch_metrics
-inner join plate_appearance_metrics using (season, game_type, player_id)
-inner join {{ ref('dim_players') }} as players using (player_id)
+inner join plate_appearance_metrics using (season, game_type, team_code)
+inner join {{ ref('team_codes') }} as team_codes using (team_code)

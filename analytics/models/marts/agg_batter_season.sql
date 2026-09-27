@@ -47,6 +47,7 @@ select
     plate_appearance_metrics.double_count,
     plate_appearance_metrics.triple_count,
     plate_appearance_metrics.home_run_count,
+    players.player_name,
     plate_appearance_metrics.single_count
         + plate_appearance_metrics.double_count
         + plate_appearance_metrics.triple_count
@@ -58,3 +59,4 @@ select
         / nullif(plate_appearance_metrics.known_plate_appearance_count, 0) as walk_rate
 from pitch_metrics
 inner join plate_appearance_metrics using (season, game_type, player_id)
+inner join {{ ref('dim_players') }} as players using (player_id)

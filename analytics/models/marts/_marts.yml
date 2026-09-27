@@ -1,6 +1,44 @@
 version: 2
 
 models:
+  - name: agg_team_pitching_season
+    description: 시즌·경기 종류·팀별 투구 및 상대 타석 결과 지표.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+      - name: team_name
+        data_tests: [not_null]
+      - name: pitch_count
+        data_tests: [not_null]
+
+  - name: agg_team_batting_season
+    description: 시즌·경기 종류·팀별 투구 대응 및 타석 결과 지표.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+      - name: team_name
+        data_tests: [not_null]
+      - name: pitch_count
+        data_tests: [not_null]
+
   - name: dim_player_team_seasons
     description: 선수의 시즌별 소속 팀과 관측 기간·역할. 시즌 중 이적은 팀별로 별도 행을 유지한다.
     columns:
@@ -38,6 +76,8 @@ models:
               arguments:
                 to: ref('dim_players')
                 field: player_id
+      - name: player_name
+        data_tests: [not_null]
       - name: pitch_count
         data_tests: [not_null]
       - name: plate_appearance_count
@@ -57,6 +97,8 @@ models:
               arguments:
                 to: ref('dim_players')
                 field: player_id
+      - name: player_name
+        data_tests: [not_null]
       - name: pitch_count
         data_tests: [not_null]
       - name: plate_appearance_count
@@ -113,6 +155,20 @@ models:
           - accepted_values:
               arguments:
                 values: [regular, exhibition, tiebreaker, wildcard, semi_po, po, ks]
+      - name: pitcher_team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+      - name: batter_team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
       - name: pitch_seq_in_game
         data_tests: [not_null]
       - name: pitch_number_in_plate_appearance
