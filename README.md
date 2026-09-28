@@ -6,7 +6,7 @@ KBO 투구 단위(pitch-level) 데이터를 수집·검증·변환하는 개인 
 - 수집: 멱등 3단계 폴백(로컬 → R2 → 소스), 순차 백필 드라이버(요청 간 1초, 동시 요청 없음), Dagster 일 파티션 asset 2개
 - 검증: seq 연속성 · 새니티 · **볼카운트 전이(도메인 규칙)** · 완전성(bronze 경기 수 = 목록 API RESULT 수) · dbt 데이터 검사 · pytest
 - 경기 종류: gameId 접두로 분류(`game_type` 컬럼) — 정규·포스트시즌 수집, 올스타 제외
-- 분석: dbt로 투구 fact, 타석 결과, 선수 차원, 구종·카운트별 지표 마트 생성
+- 분석: dbt로 투구 fact, 타석 결과, 선수 차원, 선수·팀 시즌 마트 생성. 2024·2025 팀 비교 CSV·SVG·리포트 제공
 - 자동화: 매일 오전 8시(KST) 전날 완료 경기를 수집하고 검증하며, 실패 시 GitHub 이슈 생성
 
 ## 실행
@@ -20,7 +20,10 @@ py check_transitions.py                         # 볼카운트 전이 검증
 py check_completeness.py 2025-04-01 2025-04-30  # 수집 완전성 (목록 API 대조)
 py probe_game.py <game_id> <date> <seq> ...     # 위반 seq의 raw 원본 열람
 py scripts_daily.py 2026-09-20                  # 일일 자동화와 같은 경로를 수동 실행
+py analysis/team_season_report.py               # 2024·2025 정규시즌 팀 비교 결과 생성
 ```
+
+첫 분석 결과는 [`analysis/outputs/team_regular_2024_2025.md`](analysis/outputs/team_regular_2024_2025.md)에서 볼 수 있다.
 
 ## 데이터 정책
 

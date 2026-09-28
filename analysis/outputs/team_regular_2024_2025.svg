@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980">
+<rect width="100%" height="100%" fill="#F7F8FA"/>
+<text x="64.0" y="65.0" fill="#111827" font-size="30" font-weight="700">KBO TEAM COMPARISON</text>
+<text x="64.0" y="98.0" fill="#5B6472" font-size="17">2025 regular season · rates and per-game metrics</text>
+<text x="1336.0" y="65.0" fill="#697386" font-size="13" text-anchor="end">DATA THROUGH 2025 SEASON</text>
+<rect x="64" y="135" width="620" height="360" rx="14" fill="#FFFFFF" stroke="#E4E7EB"/>
+<text x="92.0" y="173.0" fill="#1F2937" font-size="19" font-weight="700">Home runs per game</text>
+<text x="656.0" y="173.0" fill="#7A8493" font-size="12" text-anchor="end">higher is better</text>
+<text x="133.0" y="215.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SS</text>
+<line x1="146" y1="211" x2="606" y2="211" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="204" width="460.0" height="14" rx="7" fill="#E87932"/>
+<text x="614.0" y="216.0" fill="#263140" font-size="12" font-weight="600">1.14</text>
+<text x="133.0" y="242.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HT</text>
+<line x1="146" y1="238" x2="606" y2="238" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="231" width="392.8" height="14" rx="7" fill="#2457A7"/>
+<text x="546.8" y="243.0" fill="#263140" font-size="12" font-weight="600">1.03</text>
+<text x="133.0" y="269.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LG</text>
+<line x1="146" y1="265" x2="606" y2="265" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="258" width="313.8" height="14" rx="7" fill="#2457A7"/>
+<text x="467.8" y="270.0" fill="#263140" font-size="12" font-weight="600">0.91</text>
+<text x="133.0" y="296.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">NC</text>
+<line x1="146" y1="292" x2="606" y2="292" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="285" width="300.6" height="14" rx="7" fill="#2457A7"/>
+<text x="454.6" y="297.0" fill="#263140" font-size="12" font-weight="600">0.89</text>
+<text x="133.0" y="323.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SK</text>
+<line x1="146" y1="319" x2="606" y2="319" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="312" width="287.4" height="14" rx="7" fill="#2457A7"/>
+<text x="441.4" y="324.0" fill="#263140" font-size="12" font-weight="600">0.87</text>
+<text x="133.0" y="350.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HH</text>
+<line x1="146" y1="346" x2="606" y2="346" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="339" width="253.1" height="14" rx="7" fill="#2457A7"/>
+<text x="407.1" y="351.0" fill="#263140" font-size="12" font-weight="600">0.81</text>
+<text x="133.0" y="377.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">KT</text>
+<line x1="146" y1="373" x2="606" y2="373" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="366" width="208.3" height="14" rx="7" fill="#2457A7"/>
+<text x="362.3" y="378.0" fill="#263140" font-size="12" font-weight="600">0.74</text>
+<text x="133.0" y="404.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">OB</text>
+<line x1="146" y1="400" x2="606" y2="400" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="393" width="203.9" height="14" rx="7" fill="#2457A7"/>
+<text x="357.9" y="405.0" fill="#263140" font-size="12" font-weight="600">0.73</text>
+<text x="133.0" y="431.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">WO</text>
+<line x1="146" y1="427" x2="606" y2="427" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="420" width="195.1" height="14" rx="7" fill="#2457A7"/>
+<text x="349.1" y="432.0" fill="#263140" font-size="12" font-weight="600">0.72</text>
+<text x="133.0" y="458.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LT</text>
+<line x1="146" y1="454" x2="606" y2="454" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="447" width="70.0" height="14" rx="7" fill="#2457A7"/>
+<text x="224.0" y="459.0" fill="#263140" font-size="12" font-weight="600">0.52</text>
+<text x="92.0" y="477.0" fill="#98A1AD" font-size="11">Ranked among 10 teams</text>
+<rect x="716" y="135" width="620" height="360" rx="14" fill="#FFFFFF" stroke="#E4E7EB"/>
+<text x="744.0" y="173.0" fill="#1F2937" font-size="19" font-weight="700">Batting strikeout rate</text>
+<text x="1308.0" y="173.0" fill="#7A8493" font-size="12" text-anchor="end">lower is better</text>
+<text x="785.0" y="215.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">WO</text>
+<line x1="798" y1="211" x2="1258" y2="211" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="204" width="460.0" height="14" rx="7" fill="#E87932"/>
+<text x="1266.0" y="216.0" fill="#263140" font-size="12" font-weight="600">19.7%</text>
+<text x="785.0" y="242.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HT</text>
+<line x1="798" y1="238" x2="1258" y2="238" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="231" width="430.5" height="14" rx="7" fill="#2457A7"/>
+<text x="1236.5" y="243.0" fill="#263140" font-size="12" font-weight="600">19.4%</text>
+<text x="785.0" y="269.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SK</text>
+<line x1="798" y1="265" x2="1258" y2="265" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="258" width="400.7" height="14" rx="7" fill="#2457A7"/>
+<text x="1206.7" y="270.0" fill="#263140" font-size="12" font-weight="600">19.1%</text>
+<text x="785.0" y="296.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">OB</text>
+<line x1="798" y1="292" x2="1258" y2="292" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="285" width="390.5" height="14" rx="7" fill="#2457A7"/>
+<text x="1196.5" y="297.0" fill="#263140" font-size="12" font-weight="600">19.0%</text>
+<text x="785.0" y="323.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">NC</text>
+<line x1="798" y1="319" x2="1258" y2="319" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="312" width="269.8" height="14" rx="7" fill="#2457A7"/>
+<text x="1075.8" y="324.0" fill="#263140" font-size="12" font-weight="600">17.7%</text>
+<text x="785.0" y="350.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SS</text>
+<line x1="798" y1="346" x2="1258" y2="346" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="339" width="239.5" height="14" rx="7" fill="#2457A7"/>
+<text x="1045.5" y="351.0" fill="#263140" font-size="12" font-weight="600">17.4%</text>
+<text x="785.0" y="377.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">KT</text>
+<line x1="798" y1="373" x2="1258" y2="373" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="366" width="205.3" height="14" rx="7" fill="#2457A7"/>
+<text x="1011.3" y="378.0" fill="#263140" font-size="12" font-weight="600">17.0%</text>
+<text x="785.0" y="404.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HH</text>
+<line x1="798" y1="400" x2="1258" y2="400" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="393" width="168.3" height="14" rx="7" fill="#2457A7"/>
+<text x="974.3" y="405.0" fill="#263140" font-size="12" font-weight="600">16.7%</text>
+<text x="785.0" y="431.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LT</text>
+<line x1="798" y1="427" x2="1258" y2="427" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="420" width="125.1" height="14" rx="7" fill="#2457A7"/>
+<text x="931.1" y="432.0" fill="#263140" font-size="12" font-weight="600">16.2%</text>
+<text x="785.0" y="458.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LG</text>
+<line x1="798" y1="454" x2="1258" y2="454" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="447" width="70.0" height="14" rx="7" fill="#2457A7"/>
+<text x="876.0" y="459.0" fill="#263140" font-size="12" font-weight="600">15.6%</text>
+<text x="744.0" y="477.0" fill="#98A1AD" font-size="11">Ranked among 10 teams</text>
+<rect x="64" y="535" width="620" height="360" rx="14" fill="#FFFFFF" stroke="#E4E7EB"/>
+<text x="92.0" y="573.0" fill="#1F2937" font-size="19" font-weight="700">Batting walk rate</text>
+<text x="656.0" y="573.0" fill="#7A8493" font-size="12" text-anchor="end">higher is better</text>
+<text x="133.0" y="615.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LG</text>
+<line x1="146" y1="611" x2="606" y2="611" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="604" width="460.0" height="14" rx="7" fill="#E87932"/>
+<text x="614.0" y="616.0" fill="#263140" font-size="12" font-weight="600">10.2%</text>
+<text x="133.0" y="642.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">KT</text>
+<line x1="146" y1="638" x2="606" y2="638" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="631" width="372.8" height="14" rx="7" fill="#2457A7"/>
+<text x="526.8" y="643.0" fill="#263140" font-size="12" font-weight="600">9.6%</text>
+<text x="133.0" y="669.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SS</text>
+<line x1="146" y1="665" x2="606" y2="665" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="658" width="342.6" height="14" rx="7" fill="#2457A7"/>
+<text x="496.6" y="670.0" fill="#263140" font-size="12" font-weight="600">9.4%</text>
+<text x="133.0" y="696.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HT</text>
+<line x1="146" y1="692" x2="606" y2="692" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="685" width="291.4" height="14" rx="7" fill="#2457A7"/>
+<text x="445.4" y="697.0" fill="#263140" font-size="12" font-weight="600">9.0%</text>
+<text x="133.0" y="723.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LT</text>
+<line x1="146" y1="719" x2="606" y2="719" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="712" width="267.8" height="14" rx="7" fill="#2457A7"/>
+<text x="421.8" y="724.0" fill="#263140" font-size="12" font-weight="600">8.9%</text>
+<text x="133.0" y="750.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">NC</text>
+<line x1="146" y1="746" x2="606" y2="746" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="739" width="266.2" height="14" rx="7" fill="#2457A7"/>
+<text x="420.2" y="751.0" fill="#263140" font-size="12" font-weight="600">8.9%</text>
+<text x="133.0" y="777.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SK</text>
+<line x1="146" y1="773" x2="606" y2="773" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="766" width="223.6" height="14" rx="7" fill="#2457A7"/>
+<text x="377.6" y="778.0" fill="#263140" font-size="12" font-weight="600">8.6%</text>
+<text x="133.0" y="804.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">OB</text>
+<line x1="146" y1="800" x2="606" y2="800" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="793" width="146.9" height="14" rx="7" fill="#2457A7"/>
+<text x="300.9" y="805.0" fill="#263140" font-size="12" font-weight="600">8.0%</text>
+<text x="133.0" y="831.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">WO</text>
+<line x1="146" y1="827" x2="606" y2="827" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="820" width="113.7" height="14" rx="7" fill="#2457A7"/>
+<text x="267.7" y="832.0" fill="#263140" font-size="12" font-weight="600">7.8%</text>
+<text x="133.0" y="858.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HH</text>
+<line x1="146" y1="854" x2="606" y2="854" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="146" y="847" width="70.0" height="14" rx="7" fill="#2457A7"/>
+<text x="224.0" y="859.0" fill="#263140" font-size="12" font-weight="600">7.5%</text>
+<text x="92.0" y="877.0" fill="#98A1AD" font-size="11">Ranked among 10 teams</text>
+<rect x="716" y="535" width="620" height="360" rx="14" fill="#FFFFFF" stroke="#E4E7EB"/>
+<text x="744.0" y="573.0" fill="#1F2937" font-size="19" font-weight="700">Average pitch velocity (km/h)</text>
+<text x="1308.0" y="573.0" fill="#7A8493" font-size="12" text-anchor="end">higher is better</text>
+<text x="785.0" y="615.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HH</text>
+<line x1="798" y1="611" x2="1258" y2="611" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="604" width="460.0" height="14" rx="7" fill="#E87932"/>
+<text x="1266.0" y="616.0" fill="#263140" font-size="12" font-weight="600">140.3</text>
+<text x="785.0" y="642.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LT</text>
+<line x1="798" y1="638" x2="1258" y2="638" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="631" width="338.8" height="14" rx="7" fill="#2457A7"/>
+<text x="1144.8" y="643.0" fill="#263140" font-size="12" font-weight="600">139.3</text>
+<text x="785.0" y="669.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">OB</text>
+<line x1="798" y1="665" x2="1258" y2="665" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="658" width="295.4" height="14" rx="7" fill="#2457A7"/>
+<text x="1101.4" y="670.0" fill="#263140" font-size="12" font-weight="600">138.9</text>
+<text x="785.0" y="696.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SK</text>
+<line x1="798" y1="692" x2="1258" y2="692" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="685" width="255.9" height="14" rx="7" fill="#2457A7"/>
+<text x="1061.9" y="697.0" fill="#263140" font-size="12" font-weight="600">138.6</text>
+<text x="785.0" y="723.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">SS</text>
+<line x1="798" y1="719" x2="1258" y2="719" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="712" width="242.2" height="14" rx="7" fill="#2457A7"/>
+<text x="1048.2" y="724.0" fill="#263140" font-size="12" font-weight="600">138.4</text>
+<text x="785.0" y="750.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">HT</text>
+<line x1="798" y1="746" x2="1258" y2="746" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="739" width="221.1" height="14" rx="7" fill="#2457A7"/>
+<text x="1027.1" y="751.0" fill="#263140" font-size="12" font-weight="600">138.3</text>
+<text x="785.0" y="777.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">LG</text>
+<line x1="798" y1="773" x2="1258" y2="773" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="766" width="146.8" height="14" rx="7" fill="#2457A7"/>
+<text x="952.8" y="778.0" fill="#263140" font-size="12" font-weight="600">137.6</text>
+<text x="785.0" y="804.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">NC</text>
+<line x1="798" y1="800" x2="1258" y2="800" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="793" width="98.9" height="14" rx="7" fill="#2457A7"/>
+<text x="904.9" y="805.0" fill="#263140" font-size="12" font-weight="600">137.2</text>
+<text x="785.0" y="831.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">KT</text>
+<line x1="798" y1="827" x2="1258" y2="827" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="820" width="96.9" height="14" rx="7" fill="#2457A7"/>
+<text x="902.9" y="832.0" fill="#263140" font-size="12" font-weight="600">137.2</text>
+<text x="785.0" y="858.0" fill="#374151" font-size="13" font-weight="700" text-anchor="end">WO</text>
+<line x1="798" y1="854" x2="1258" y2="854" stroke="#DDE2E8" stroke-width="1"/>
+<rect x="798" y="847" width="70.0" height="14" rx="7" fill="#2457A7"/>
+<text x="876.0" y="859.0" fill="#263140" font-size="12" font-weight="600">137.0</text>
+<text x="744.0" y="877.0" fill="#98A1AD" font-size="11">Ranked among 10 teams</text>
+<text x="64.0" y="942.0" fill="#7A8493" font-size="12">Source: kbo-pipeline / agg_team_batting_season + agg_team_pitching_season</text>
+<text x="1336.0" y="942.0" fill="#7A8493" font-size="12" text-anchor="end">Team codes used for font-safe labels</text>
+</svg>
