@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from ingestion.run import get_s3_or_none, ingest_game, make_source, report_skipped, write_bronze
+from scripts_extract_games import write_date as write_game_results
 
 
 def previous_kst_date() -> str:
@@ -41,6 +42,7 @@ def main() -> None:
         all_rows.extend(rows)
 
     out = write_bronze(all_rows, dt, s3=s3)
+    write_game_results(targets, dt, s3=s3)
     print(f"OK: {len(targets)} games, {len(all_rows)} events -> {out}")
 
 

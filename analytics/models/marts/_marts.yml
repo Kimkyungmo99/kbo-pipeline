@@ -1,6 +1,61 @@
 version: 2
 
 models:
+  - name: dim_games
+    description: 목록 API의 공식 최종 스코어를 보존한 경기 차원. 경기당 한 행이다.
+    columns:
+      - name: game_id
+        data_tests: [not_null, unique]
+      - name: game_date
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: away_team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+      - name: home_team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+      - name: away_score
+        data_tests: [not_null]
+      - name: home_score
+        data_tests: [not_null]
+      - name: winner
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [HOME, AWAY, DRAW]
+
+  - name: agg_team_results_season
+    description: 시즌·경기 종류·팀별 공식 승패·득실 집계. 승률은 무승부를 분모에서 제외한다.
+    columns:
+      - name: season
+        data_tests: [not_null]
+      - name: game_type
+        data_tests: [not_null]
+      - name: team_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('team_codes')
+                field: team_code
+      - name: team_name
+        data_tests: [not_null]
+      - name: game_count
+        data_tests: [not_null]
+      - name: win_rate
+        data_tests: [not_null]
+
   - name: agg_team_pitching_season
     description: 시즌·경기 종류·팀별 투구 및 상대 타석 결과 지표.
     columns:

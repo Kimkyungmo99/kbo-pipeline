@@ -10,4 +10,5 @@ py analysis/team_season_report.py
 
 - CSV: 재사용 가능한 팀별 지표
 - SVG: 2025년 핵심 지표 순위 차트
+- SVG: 승률과 경기당 득실차·타격 삼진율의 관계 차트
 - Markdown: 주요 결과와 해석 범위

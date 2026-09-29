@@ -58,6 +58,11 @@ class PortalSource(GameSource):
                 status=g.get("statusCode"),
                 home=g.get("homeTeamName"),
                 away=g.get("awayTeamName"),
+                home_team_code=g.get("homeTeamCode"),
+                away_team_code=g.get("awayTeamCode"),
+                home_score=g.get("homeTeamScore"),
+                away_score=g.get("awayTeamScore"),
+                winner=g.get("winner"),
             )
             for g in raw.get("result", {}).get("games", [])
         ]

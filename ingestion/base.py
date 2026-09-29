@@ -20,6 +20,11 @@ class GameRef:
     status: str | None = None    # 예: "RESULT" (취소 경기는 relay null)
     home: str | None = None
     away: str | None = None
+    home_team_code: str | None = None
+    away_team_code: str | None = None
+    home_score: int | None = None
+    away_score: int | None = None
+    winner: str | None = None
 
 
 class GameSource(ABC):
