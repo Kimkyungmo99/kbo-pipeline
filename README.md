@@ -22,9 +22,11 @@ py probe_game.py <game_id> <date> <seq> ...     # 위반 seq의 raw 원본 열�
 py scripts_daily.py 2026-09-20                  # 일일 자동화와 같은 경로를 수동 실행
 py scripts_extract_games.py                     # 공식 최종 스코어 전체 백필
 py analysis/team_season_report.py               # 2024·2025 정규시즌 팀 비교 결과 생성
+py analysis/build_dashboard.py                  # 오프라인 팀 분석 대시보드 생성
 ```
 
 첫 분석 결과는 [`analysis/outputs/team_regular_2024_2025.md`](analysis/outputs/team_regular_2024_2025.md)에서 볼 수 있다.
+시즌·팀·지표를 선택하는 [팀 분석 대시보드](analysis/outputs/kbo_team_dashboard.html)도 제공한다. 현재 로컬 스냅샷으로 생성되며, 2025년은 수록된 714경기 기준이다.
 
 ## 데이터 정책
 
